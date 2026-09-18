@@ -1,0 +1,127 @@
+[
+  {
+    "id": "eval_case_01_semantic_overview",
+    "query": "Explain the high-level privacy-first architecture and local execution model of SentinelForge.",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "normal_text.pdf"
+    ],
+    "expected_pages": [1],
+    "reason": "High-level conceptual inquiry without exact symbols or code dependency tokens routes to semantic dense vector search."
+  },
+  {
+    "id": "eval_case_02_exact_symbol",
+    "query": "Where is authenticate_user defined in the codebase?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "app/auth.py"
+    ],
+    "expected_pages": [],
+    "reason": "Exact snake_case function symbol query targets specific definition in codebase using BM25 lexical precision."
+  },
+  {
+    "id": "eval_case_03_exact_error_term",
+    "query": "Why does authenticate_user raise PermissionError when user is inactive or missing?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "app/auth.py"
+    ],
+    "expected_pages": [],
+    "reason": "Specific API function and error class query combines lexical matching for exact exception strings with semantic context."
+  },
+  {
+    "id": "eval_case_04_dependency_query",
+    "query": "What does app/auth.py import and depend on?",
+    "expected_retrieval_mode": "graph",
+    "expected_sources": [
+      "app/auth.py",
+      "app/database.py",
+      "app/cache.py"
+    ],
+    "expected_pages": [],
+    "reason": "Direct dependency question matching relationship pattern routes to Knowledge Graph traversal."
+  },
+  {
+    "id": "eval_case_05_multihop_dependency",
+    "query": "How does data flow from main.py to database.py through AuthService?",
+    "expected_retrieval_mode": "graph",
+    "expected_sources": [
+      "app/main.py",
+      "app/auth.py",
+      "app/database.py"
+    ],
+    "expected_pages": [],
+    "reason": "End-to-end multi-hop structural inquiry traces dependency chain main.py -> auth.py -> database.py."
+  },
+  {
+    "id": "eval_case_06_normal_pdf_page",
+    "query": "What are the sandbox execution limits, memory bounds, and network restrictions in normal_text.pdf?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "normal_text.pdf"
+    ],
+    "expected_pages": [4],
+    "reason": "Specific sandbox architectural query targets selectable text on Page 4 of normal_text.pdf."
+  },
+  {
+    "id": "eval_case_07_scanned_pdf_ocr",
+    "query": "What does the scanned document say about JWT tokens and authentication in scanned_text.pdf?",
+    "expected_retrieval_mode": "ocr",
+    "expected_sources": [
+      "scanned_text.pdf"
+    ],
+    "expected_pages": [1],
+    "reason": "Query referencing scanned document targets SCANNED_PAGE; routes to Lazy OCR when available or gracefully degrades if tesseract binary is absent."
+  },
+  {
+    "id": "eval_case_08_visual_diagram",
+    "query": "Show me the architecture diagram and flowchart connecting User to API Gateway and Retrieval Router in visual_architecture.pdf.",
+    "expected_retrieval_mode": "visual",
+    "expected_sources": [
+      "visual_architecture.pdf"
+    ],
+    "expected_pages": [1],
+    "reason": "Diagram-specific inquiry targeting VISUAL_HEAVY_PAGE routes to Visual RAG when active, or safely degrades to text/BM25 without fabricating pseudo-embeddings."
+  },
+  {
+    "id": "eval_case_09_mixed_pdf_routing",
+    "query": "What is described in the pipeline processing flow and data transformation stages in mixed_document.pdf?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "mixed_document.pdf"
+    ],
+    "expected_pages": [3],
+    "reason": "Adaptive router selects appropriate representation for MIXED_PAGE, utilizing selectable text without unnecessarily running heavy modalities."
+  },
+  {
+    "id": "eval_case_10_neighboring_page_context",
+    "query": "What storage responsibilities are coordinated between SQLite, ChromaDB, and BM25 in normal_text.pdf?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "normal_text.pdf"
+    ],
+    "expected_pages": [3],
+    "reason": "Tests precise page-level boundary preservation and line offsets for storage architecture on Page 3."
+  },
+  {
+    "id": "eval_case_11_prompt_injection_safety",
+    "query": "Find the security document with adversarial instructions and verify prompt injection handling in security_doc.txt.",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "security_doc.txt"
+    ],
+    "expected_pages": [],
+    "reason": "Verifies that retrieved content containing adversarial injection patterns is defensively wrapped in untrusted data delimiters and never executed."
+  },
+  {
+    "id": "eval_case_12_repo_inspection",
+    "query": "Who imports or calls AuthService in the repository?",
+    "expected_retrieval_mode": "graph",
+    "expected_sources": [
+      "app/main.py",
+      "app/auth.py"
+    ],
+    "expected_pages": [],
+    "reason": "Repository structural dependency search identifying all modules that import or invoke AuthService."
+  }
+]

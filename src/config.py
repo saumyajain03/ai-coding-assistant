@@ -4,7 +4,6 @@ Validates all environment settings dynamically using Pydantic Settings.
 Enforces filesystem path jails, resource limits, and provider configurations.
 """
 
-import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -73,7 +72,9 @@ class Settings(BaseSettings):
     MAX_RENDER_IMAGE_RES: int = 150
     MAX_VISUAL_REGIONS_PER_PAGE: int = 5
     VISUAL_TIMEOUT_SEC: int = 10
+    VISUAL_MODEL_NAME: str = "deterministic-visual-feature-v1"
     VISUAL_CACHE_DIR: Path = Field(default=Path("./data/scratch/visual_cache"))
+    DOCUMENT_STORE_DIR: Path = Field(default=Path("./data/scratch/documents"))
     CACHE_MAX_SIZE_MB: int = 100
 
     # --- LLM Inference Providers ---
@@ -83,15 +84,25 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "llama3.2:1b"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     LLM_API_KEY: str | None = None
-    LLM_API_BASE_URL: str | None = None
+    HF_TOKEN: str | None = None
+    GROQ_API_KEY: str | None = None
+    OPENAI_API_BASE: str = "https://api.openai.com/v1"
 
-    # --- Sandbox Security & Process Limits ---
-    SANDBOX_TIMEOUT_SEC: int = 15
-    SANDBOX_MAX_MEMORY_MB: int = 256
+    # --- System Sandbox Resource Limits ---
+    SANDBOX_TIMEOUT_SEC: int = 5
+    SANDBOX_MEMORY_LIMIT_MB: int = 200
+    SANDBOX_MAX_MEMORY_MB: int = 200
     SANDBOX_MAX_NPROC: int = 10
-    SANDBOX_MAX_OUTPUT_BYTES: int = 65536
+    SANDBOX_MAX_OUTPUT_BYTES: int = 1024 * 1024
+    SANDBOX_CPU_LIMIT_PERCENT: int = 50
+    ALLOW_OUTBOUND_NETWORK: bool = False
     ALLOW_NETWORK_DEFAULT: bool = False
+
+    # --- Security & Human-in-the-loop Invariants ---
+    AUTO_APPLY_PATCHES: bool = False
+    REQUIRE_APPROVAL_GATE: bool = True
     REQUIRE_HUMAN_APPROVAL_FOR_PATCH: bool = True
+    AUDIT_LOG_PATH: Path = Field(default=Path("./data/audit.log"))
 
     # --- API Security & Rate Limiting ---
     RATE_LIMIT_PER_MINUTE: int = 60
@@ -102,11 +113,17 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, v: Any) -> list[str]:
         if isinstance(v, str):
-            try:
-                parsed = json.loads(v)
-                if isinstance(parsed, list):
-                    return parsed
-            except Exception:
+            v_clean = v.strip()
+            if not v_clean:
+                return ["*"]
+            if v_clean.startswith("[") and v_clean.endswith("]"):
+                import json
+
+                try:
+                    return json.loads(v_clean)
+                except Exception:
+                    pass
+            else:
                 return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v if isinstance(v, list) else ["*"]
 
@@ -119,6 +136,7 @@ class Settings(BaseSettings):
             self.SCRATCH_DIR,
             self.OCR_CACHE_DIR,
             self.VISUAL_CACHE_DIR,
+            self.DOCUMENT_STORE_DIR,
         ]:
             path.resolve().mkdir(parents=True, exist_ok=True)
 

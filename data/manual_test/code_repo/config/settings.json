@@ -1,0 +1,18 @@
+{
+  "application": "SentinelForge Demo Codebase",
+  "version": "1.0.0",
+  "auth": {
+    "token_algorithm": "HS256",
+    "token_ttl_seconds": 3600,
+    "issuer": "sentinelforge-auth"
+  },
+  "database": {
+    "engine": "sqlite3",
+    "connection_pool_size": 5,
+    "timeout_ms": 3000
+  },
+  "cache": {
+    "enabled": true,
+    "backend": "in_memory"
+  }
+}

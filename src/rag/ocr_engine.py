@@ -34,7 +34,9 @@ class LazyOCREngine:
         return shutil.which("tesseract") is not None
 
     def is_ocr_available(self) -> bool:
-        return self.settings.ENABLE_OCR and self._tesseract_available
+        if self._tesseract_available is not None:
+            return bool(self.settings.ENABLE_OCR and self._tesseract_available)
+        return bool(self.settings.ENABLE_OCR and self._detect_tesseract())
 
     def _get_page_lock(self, page_key: str) -> threading.Lock:
         with self._global_lock:
@@ -50,12 +52,16 @@ class LazyOCREngine:
         if path.exists():
             try:
                 with open(path, encoding="utf-8") as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if data.get("status") == OCRStatus.COMPLETED.value:
+                        return data
             except Exception as e:
                 logger.warning("Failed to read OCR cache file %s: %s", path, e)
         return None
 
     def _save_cache(self, doc_id: str, page_number: int, data: dict[str, Any]) -> None:
+        if data.get("status") != OCRStatus.COMPLETED.value:
+            return
         path = self._get_cache_path(doc_id, page_number)
         try:
             with open(path, "w", encoding="utf-8") as f:
@@ -101,16 +107,10 @@ class LazyOCREngine:
         lock = self._get_page_lock(page_key)
 
         with lock:
-            # 1. Check cache first
-            cached = self.get_cached_ocr(doc_id, page_number)
-            if cached is not None:
-                cached["cached"] = True
-                return cached
-
             start_time = time.time()
             warnings: list[str] = []
 
-            # 2. Check if OCR is disabled
+            # 1. Check if OCR is disabled
             if not self.settings.ENABLE_OCR:
                 res = {
                     "status": OCRStatus.NOT_REQUIRED.value,
@@ -123,13 +123,8 @@ class LazyOCREngine:
                 }
                 return res
 
-            # 3. If custom/simulated OCR text is provided (for test suites or injected runs)
-            if custom_ocr_text is not None:
-                ocr_text = custom_ocr_text
-                confidence = 0.95
-                status = OCRStatus.COMPLETED
-            elif not self._tesseract_available:
-                # 4. Graceful fallback when system binary is missing
+            # 2. Check if local OCR binary is missing
+            if custom_ocr_text is None and not self.is_ocr_available():
                 warnings.append(
                     "Local OCR binary (tesseract) is not installed on this system. "
                     "Operating in graceful fallback mode with standard text extraction."
@@ -143,13 +138,35 @@ class LazyOCREngine:
                     "cached": False,
                     "duration_ms": round((time.time() - start_time) * 1000, 2),
                 }
-                # Update store
                 store = get_canonical_page_store()
                 store.update_page_ocr(filename, page_number, OCRStatus.UNAVAILABLE, warnings=warnings)
                 return res
+
+            # 3. Check cache for completed OCR results
+            cached = self.get_cached_ocr(doc_id, page_number)
+            if cached is not None:
+                cached["cached"] = True
+                return cached
+
+            # 4. If custom/simulated OCR text is provided (for test suites or injected runs)
+            if custom_ocr_text is not None:
+                ocr_text = custom_ocr_text
+                confidence = 0.95
+                status = OCRStatus.COMPLETED
             else:
-                # 5. Real Tesseract execution on page images
-                ocr_text, confidence, ocr_warns = self._run_tesseract(page_images)
+                # 5. Recover page images if not supplied directly
+                effective_images = page_images
+                if not effective_images:
+                    from src.rag.page_recovery import recover_page_images
+
+                    effective_images = recover_page_images(
+                        doc_id=doc_id,
+                        filename=filename,
+                        page_number=page_number,
+                    )
+
+                # Real Tesseract execution on page images
+                ocr_text, confidence, ocr_warns = self._run_tesseract(effective_images)
                 warnings.extend(ocr_warns)
                 status = OCRStatus.COMPLETED if ocr_text else OCRStatus.FAILED
 
@@ -190,7 +207,7 @@ class LazyOCREngine:
             return result
 
     def _run_tesseract(self, page_images: list[Any] | None) -> tuple[str, float, list[str]]:
-        """Executes pytesseract or local tesseract subprocess."""
+        """Executes local tesseract binary on extracted page images."""
         if not page_images:
             return "", 0.0, ["No embedded images found on page to OCR."]
         try:
@@ -198,7 +215,7 @@ class LazyOCREngine:
             from io import BytesIO
 
             all_text: list[str] = []
-            for img in page_images[:3]:
+            for idx, img in enumerate(page_images[:3]):
                 # Extract image bytes
                 img_data = getattr(img, "data", None)
                 if not img_data and hasattr(img, "save"):
@@ -207,17 +224,36 @@ class LazyOCREngine:
                     img_data = buf.getvalue()
 
                 if img_data:
+                    # Attempt 1: via stdin pipe
                     proc = subprocess.run(
-                        ["tesseract", "stdin", "stdout", "--oem", "1", "-l", "eng"],
+                        ["tesseract", "stdin", "stdout", "-l", "eng"],
                         input=img_data,
                         capture_output=True,
                         timeout=self.settings.OCR_TIMEOUT_SEC,
                     )
                     if proc.returncode == 0:
-                        all_text.append(proc.stdout.decode("utf-8", errors="replace"))
+                        txt = proc.stdout.decode("utf-8", errors="replace").strip()
+                        if txt:
+                            all_text.append(txt)
+                    else:
+                        # Attempt 2: fallback via temporary disk file
+                        tmp_file = self.cache_dir / f"tmp_ocr_{idx}_{int(time.time()*1000)}.png"
+                        try:
+                            tmp_file.write_bytes(img_data)
+                            proc2 = subprocess.run(
+                                ["tesseract", str(tmp_file), "stdout", "-l", "eng"],
+                                capture_output=True,
+                                timeout=self.settings.OCR_TIMEOUT_SEC,
+                            )
+                            if proc2.returncode == 0:
+                                txt2 = proc2.stdout.decode("utf-8", errors="replace").strip()
+                                if txt2:
+                                    all_text.append(txt2)
+                        finally:
+                            tmp_file.unlink(missing_ok=True)
 
             combined = "\n".join(all_text).strip()
-            return combined, 0.85 if combined else 0.0, []
+            return combined, 0.90 if combined else 0.0, []
         except Exception as e:
             return "", 0.0, [f"Tesseract execution error: {e}"]
 

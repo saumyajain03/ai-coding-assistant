@@ -1,0 +1,167 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 6 0 R 9 0 R 12 0 R 15 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 553 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(SentinelForge Architecture Overview) Tj
+0 -18 Td
+(SentinelForge is an autonomous security analysis platform built for private environments.) Tj
+0 -18 Td
+(It operates with zero external cloud dependencies, ensuring source code never leaks.) Tj
+0 -18 Td
+(Key architectural pillars include deterministic AST parsing, tri-store RAG retrieval,) Tj
+0 -18 Td
+(and isolated subprocess execution for security analysis.) Tj
+0 -18 Td
+(CONF_OVERVIEW_PAGE1: Privacy-first architecture guarantees zero external cloud telemetry.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 7 0 R /Resources << /Font << /F1 8 0 R >> >> >>
+endobj
+7 0 obj
+<< /Length 591 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(Authentication Architecture and Token Lifecycle) Tj
+0 -18 Td
+(The authentication subsystem provides cryptographic token generation and validation.) Tj
+0 -18 Td
+(AuthService implements JSON Web Tokens \(JWT\) using HMAC-SHA256 signature verification.) Tj
+0 -18 Td
+(Tokens contain subject IDs, authorization scopes, and issuance timestamps.) Tj
+0 -18 Td
+(Clock skew tolerance is enforced to prevent replay attacks and expired credential exploitation.) Tj
+0 -18 Td
+(CONF_AUTH_PAGE2: AuthService validates cryptographic JWT tokens and prevents clock skew.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 10 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+endobj
+10 0 obj
+<< /Length 611 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(Database Architecture and Unified Storage Responsibilities) Tj
+0 -18 Td
+(SentinelForge coordinates a unified tri-store storage layer to deliver hybrid retrieval.) Tj
+0 -18 Td
+(Relational metadata, canonical page records, and knowledge graph edges are persisted in SQLite.) Tj
+0 -18 Td
+(Dense semantic embeddings are stored locally within an embedded ChromaDB collection.) Tj
+0 -18 Td
+(In-memory BM25 indexes keyword frequency for exact symbol and syntax matching.) Tj
+0 -18 Td
+(CONF_STORAGE_PAGE3: Tri-store storage layer coordinates SQLite, ChromaDB, and in-memory BM25.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 13 0 R /Resources << /Font << /F1 14 0 R >> >> >>
+endobj
+13 0 obj
+<< /Length 638 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(Defensive Sandbox Architecture and Execution Limits) Tj
+0 -18 Td
+(The defensive sandbox enforces strict process isolation for executing external commands.) Tj
+0 -18 Td
+(Execution limits cap CPU runtime at five seconds and memory consumption at two hundred megabytes.) Tj
+0 -18 Td
+(Network restrictions drop all inbound and outbound socket connections to eliminate data exfiltration.) Tj
+0 -18 Td
+(Filesystem isolation restricts write operations strictly to the workspace jail boundary.) Tj
+0 -18 Td
+(CONF_SANDBOX_PAGE4: Defensive sandbox enforces process isolation, memory limits, and network jail.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 16 0 R /Resources << /Font << /F1 17 0 R >> >> >>
+endobj
+16 0 obj
+<< /Length 620 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(Testing Strategy and Verification Governance) Tj
+0 -18 Td
+(The testing framework validates accuracy, security guardrails, and deterministic behavior.) Tj
+0 -18 Td
+(Automated regression suites evaluate retrieval precision using Reciprocal Rank Fusion.) Tj
+0 -18 Td
+(Security vulnerability checks test prompt injection sanitization against adversarial inputs.) Tj
+0 -18 Td
+(Human-in-the-loop \(HITL\) approval gates require explicit authorization before applying code patches.) Tj
+0 -18 Td
+(CONF_TESTING_PAGE5: Security regression tests enforce HITL human approval for code patches.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 18
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000141 00000 n 
+0000000267 00000 n 
+0000000871 00000 n 
+0000000941 00000 n 
+0000001067 00000 n 
+0000001709 00000 n 
+0000001779 00000 n 
+0000001907 00000 n 
+0000002570 00000 n 
+0000002641 00000 n 
+0000002770 00000 n 
+0000003460 00000 n 
+0000003531 00000 n 
+0000003660 00000 n 
+0000004332 00000 n 
+trailer
+<< /Size 18 /Root 1 0 R >>
+startxref
+4403
+%%EOF

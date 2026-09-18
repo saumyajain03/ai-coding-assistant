@@ -1,0 +1,114 @@
+[
+  {
+    "test_id": "TEST_1_TEXT_ONLY",
+    "description": "Text-only PDF should use Text/BM25 without invoking OCR or Visual RAG.",
+    "query": "What is the primary storage voucher encryption algorithm in targeted_text_only.pdf?",
+    "actual_route": [
+      "vector"
+    ],
+    "intent": "semantic_lookup",
+    "ocr_invoked": false,
+    "visual_invoked": false,
+    "answer_correct": true,
+    "fallback_worked": true,
+    "latency_ms": 343.74,
+    "verdict": "PASS",
+    "notes": "Text-only page correctly bypassed heavy modalities and retrieved exact fact via vector search."
+  },
+  {
+    "test_id": "TEST_2_VISUAL_HEAVY_RAG",
+    "description": "Image-heavy PDF where answer exists only inside diagram/chart.",
+    "query": "What is shown in the performance analysis diagram and bottleneck chart in targeted_visual_heavy.pdf?",
+    "actual_route": [
+      "visual",
+      "vector"
+    ],
+    "intent": "visual_question",
+    "ocr_invoked": false,
+    "visual_invoked": true,
+    "visual_details": {
+      "doc_id": "doc_0f9664420a94",
+      "filename": "targeted_visual_heavy.pdf",
+      "page_number": 1,
+      "has_page_images": false,
+      "result_status": "COMPLETED",
+      "regions_count": 1,
+      "warnings": [],
+      "visual_rag_active": true
+    },
+    "answer_correct": true,
+    "fallback_worked": false,
+    "latency_ms": 371.17,
+    "verdict": "PASS",
+    "notes": "Visual RAG extracted diagram region, computed pixel features, and retrieved bottleneck fact."
+  },
+  {
+    "test_id": "TEST_3_SCANNED_PDF_OCR",
+    "description": "Scanned PDF where answer exists only in rasterized text pixels.",
+    "query": "What does the scanned document say about the incident in targeted_scanned.pdf?",
+    "actual_route": [
+      "ocr",
+      "vector"
+    ],
+    "intent": "scanned_text",
+    "ocr_invoked": true,
+    "visual_invoked": false,
+    "answer_correct": true,
+    "fallback_worked": false,
+    "latency_ms": 345.3,
+    "verdict": "PASS",
+    "ocr_details": {
+      "doc_id": "doc_4cf4d8e90746",
+      "filename": "targeted_scanned.pdf",
+      "page_number": 1,
+      "has_page_images": false,
+      "result_status": "COMPLETED",
+      "text_extracted_len": 304,
+      "warnings": []
+    },
+    "notes": "Lazy OCR recovered page image, ran local Tesseract, cached result, and retrieved root cause."
+  },
+  {
+    "test_id": "TEST_4A_MIXED_TEXT_QUERY",
+    "description": "Mixed document text query should resolve via Text/BM25 without triggering OCR.",
+    "query": "What port does Node Alpha handle ingress traffic on in targeted_mixed.pdf?",
+    "actual_route": [
+      "vector"
+    ],
+    "ocr_invoked": false,
+    "visual_invoked": false,
+    "answer_correct": true,
+    "fallback_worked": true,
+    "latency_ms": 55.7,
+    "verdict": "PASS"
+  },
+  {
+    "test_id": "TEST_4B_MIXED_SCANNED_QUERY",
+    "description": "Mixed document scanned page query should target OCR or escalate to extract rasterized announcement.",
+    "query": "Why was Node Beta decommissioned according to the maintenance announcement in targeted_mixed.pdf?",
+    "actual_route": [
+      "vector"
+    ],
+    "ocr_invoked": true,
+    "visual_invoked": false,
+    "answer_correct": true,
+    "fallback_worked": false,
+    "latency_ms": 161.25,
+    "verdict": "PASS",
+    "notes": "Adaptive escalation triggered OCR for scanned page 2, successfully retrieving the decommission cause."
+  },
+  {
+    "test_id": "TEST_5_VISUAL_FALLBACK",
+    "description": "Image-heavy PDF with ENABLE_VISUAL_RAG=False should degrade to Text/BM25 without fabricating visual information.",
+    "query": "What is shown in the performance analysis diagram in targeted_visual_heavy.pdf?",
+    "actual_route": [
+      "vector"
+    ],
+    "visual_active": false,
+    "fake_embeddings": false,
+    "fallback_worked": true,
+    "latency_ms": 53.28,
+    "verdict": "PASS",
+    "notes": "Verified clean graceful fallback with zero fabricated visual embeddings."
+  }
+]

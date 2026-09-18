@@ -66,6 +66,7 @@ def fuse_and_deduplicate(
         item = entry["item"]
         normalized_fusion_score = round(min(1.0, entry["rrf_score"] / (max_rrf + 1e-5)), 4)
         item["score"] = normalized_fusion_score
+        item["raw_score"] = round(entry["best_score"], 4)
         item["fusion_sources"] = sorted(entry["sources"])
         final_results.append(item)
 

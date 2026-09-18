@@ -109,6 +109,15 @@ def _parse_pdf(raw_bytes: bytes, filename: str = "document.pdf") -> list[ParsedS
 
     file_hash = sha256(raw_bytes).hexdigest()
     doc_id = f"doc_{file_hash[:12]}"
+
+    # Save raw bytes to document store for lazy on-demand OCR / Visual processing
+    doc_store_path = settings.DOCUMENT_STORE_DIR / f"{doc_id}.pdf"
+    try:
+        doc_store_path.parent.mkdir(parents=True, exist_ok=True)
+        doc_store_path.write_bytes(raw_bytes)
+    except Exception:
+        pass
+
     canonical_pages: list[CanonicalPageRecord] = []
     current_line = 1
 
@@ -168,7 +177,7 @@ def _parse_pdf(raw_bytes: bytes, filename: str = "document.pdf") -> list[ParsedS
             available_modalities=modalities,
             ocr_status=ocr_status,
             visual_status=visual_status,
-            source_path=filename,
+            source_path=str(doc_store_path),
             extraction_warnings=[],
             image_count=metrics["image_count"],
             image_area_ratio=metrics["image_area_ratio"],
@@ -179,8 +188,10 @@ def _parse_pdf(raw_bytes: bytes, filename: str = "document.pdf") -> list[ParsedS
 
         # 5. Emit normalized ParsedSection for downstream chunking
         section_content = clean_text
+        is_placeholder = False
         if not section_content and page_type == PageType.SCANNED_PAGE:
             section_content = f"[Scanned Page {page_number} - Text not selectable. OCR fallback available]"
+            is_placeholder = True
 
         sections.append(
             ParsedSection(
@@ -198,6 +209,8 @@ def _parse_pdf(raw_bytes: bytes, filename: str = "document.pdf") -> list[ParsedS
                     "ocr_status": ocr_status.value,
                     "visual_status": visual_status.value,
                     "filename": filename,
+                    "is_placeholder": is_placeholder,
+                    "doc_id": doc_id,
                 },
             )
         )

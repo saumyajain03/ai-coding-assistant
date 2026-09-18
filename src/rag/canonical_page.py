@@ -166,8 +166,8 @@ class CanonicalPageStore:
     def get_page(self, filename: str, page_number: int) -> CanonicalPageRecord | None:
         with self._get_connection() as conn:
             row = conn.execute(
-                "SELECT * FROM canonical_pages WHERE filename = ? AND page_number = ? LIMIT 1;",
-                (filename, page_number),
+                "SELECT * FROM canonical_pages WHERE (filename = ? OR filename LIKE ?) AND page_number = ? LIMIT 1;",
+                (filename, f"%{filename}", page_number),
             ).fetchone()
             if not row:
                 return None
@@ -176,8 +176,8 @@ class CanonicalPageStore:
     def get_doc_pages(self, filename: str) -> list[CanonicalPageRecord]:
         with self._get_connection() as conn:
             rows = conn.execute(
-                "SELECT * FROM canonical_pages WHERE filename = ? ORDER BY page_number ASC;",
-                (filename,),
+                "SELECT * FROM canonical_pages WHERE (filename = ? OR filename LIKE ?) ORDER BY page_number ASC;",
+                (filename, f"%{filename}"),
             ).fetchall()
             return [self._row_to_record(r) for r in rows]
 
@@ -189,8 +189,8 @@ class CanonicalPageStore:
         with self._get_connection() as conn:
             if filename:
                 rows = conn.execute(
-                    "SELECT * FROM canonical_pages WHERE filename = ? AND page_type = ? ORDER BY page_number ASC;",
-                    (filename, page_type.value),
+                    "SELECT * FROM canonical_pages WHERE (filename = ? OR filename LIKE ?) AND page_type = ? ORDER BY page_number ASC;",
+                    (filename, f"%{filename}", page_type.value),
                 ).fetchall()
             else:
                 rows = conn.execute(
@@ -207,8 +207,8 @@ class CanonicalPageStore:
         with self._get_connection() as conn:
             if filename:
                 rows = conn.execute(
-                    "SELECT * FROM canonical_pages WHERE filename = ? AND available_modalities LIKE ? ORDER BY page_number ASC;",
-                    (filename, f"%{modality}%"),
+                    "SELECT * FROM canonical_pages WHERE (filename = ? OR filename LIKE ?) AND available_modalities LIKE ? ORDER BY page_number ASC;",
+                    (filename, f"%{filename}", f"%{modality}%"),
                 ).fetchall()
             else:
                 rows = conn.execute(
@@ -227,8 +227,8 @@ class CanonicalPageStore:
     ) -> bool:
         with self._get_connection() as conn:
             row = conn.execute(
-                "SELECT text, available_modalities, extraction_warnings FROM canonical_pages WHERE filename = ? AND page_number = ?;",
-                (filename, page_number),
+                "SELECT text, available_modalities, extraction_warnings FROM canonical_pages WHERE (filename = ? OR filename LIKE ?) AND page_number = ?;",
+                (filename, f"%{filename}", page_number),
             ).fetchone()
             if not row:
                 return False
@@ -254,7 +254,7 @@ class CanonicalPageStore:
                 """
                 UPDATE canonical_pages
                 SET ocr_status = ?, text = ?, available_modalities = ?, extraction_warnings = ?
-                WHERE filename = ? AND page_number = ?;
+                WHERE (filename = ? OR filename LIKE ?) AND page_number = ?;
                 """,
                 (
                     status.value,
@@ -262,6 +262,7 @@ class CanonicalPageStore:
                     json.dumps(modalities),
                     json.dumps(existing_warnings),
                     filename,
+                    f"%{filename}",
                     page_number,
                 ),
             )
@@ -277,8 +278,8 @@ class CanonicalPageStore:
     ) -> bool:
         with self._get_connection() as conn:
             row = conn.execute(
-                "SELECT available_modalities, extraction_warnings FROM canonical_pages WHERE filename = ? AND page_number = ?;",
-                (filename, page_number),
+                "SELECT available_modalities, extraction_warnings FROM canonical_pages WHERE (filename = ? OR filename LIKE ?) AND page_number = ?;",
+                (filename, f"%{filename}", page_number),
             ).fetchone()
             if not row:
                 return False
@@ -295,13 +296,14 @@ class CanonicalPageStore:
                 """
                 UPDATE canonical_pages
                 SET visual_status = ?, available_modalities = ?, extraction_warnings = ?
-                WHERE filename = ? AND page_number = ?;
+                WHERE (filename = ? OR filename LIKE ?) AND page_number = ?;
                 """,
                 (
                     status.value,
                     json.dumps(modalities),
                     json.dumps(existing_warnings),
                     filename,
+                    f"%{filename}",
                     page_number,
                 ),
             )

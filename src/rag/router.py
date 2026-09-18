@@ -195,56 +195,45 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
                         f"Page {p_num} is classified as standard TEXT_PAGE; routing to cheap text vector retrieval.",
                     )
 
-    # 2. Multi-hop architecture
-    for pat in MULTI_HOP_PATTERNS:
-        if pat.search(q_clean):
-            return (
-                RetrievalIntent.MULTI_HOP_ARCHITECTURE,
-                entities,
-                target_pages,
-                "Query asks for end-to-end data/architectural flow across multiple components.",
-            )
+    # 2. Whole-Document Modality Inspection
+    if target_filename:
+        doc_pages = page_store.get_doc_pages(target_filename)
+        if doc_pages:
+            if all(p.page_type == PageType.SCANNED_PAGE for p in doc_pages):
+                return (
+                    RetrievalIntent.SCANNED_TEXT,
+                    entities,
+                    target_pages,
+                    f"All pages in target document '{target_filename}' are scanned pages; routing to OCR pipeline.",
+                )
+            if all(p.page_type == PageType.VISUAL_HEAVY_PAGE for p in doc_pages):
+                visual_engine = get_visual_engine()
+                if visual_engine.is_visual_active():
+                    return (
+                        RetrievalIntent.VISUAL_QUESTION,
+                        entities,
+                        target_pages,
+                        f"All pages in target document '{target_filename}' are visual-heavy pages; routing to Visual RAG pipeline.",
+                    )
+                return (
+                    RetrievalIntent.SEMANTIC_LOOKUP,
+                    entities,
+                    target_pages,
+                    f"All pages in '{target_filename}' are visual, but Visual RAG is inactive; safely degrading to text + BM25.",
+                )
 
-    # 3. Impact analysis
-    for pat in IMPACT_PATTERNS:
-        if pat.search(q_clean):
-            return (
-                RetrievalIntent.IMPACT_ANALYSIS,
-                entities,
-                target_pages,
-                "Query asks for breaking changes or blast radius analysis.",
-            )
-
-    # 4. Relationship / Dependency
-    for pat in RELATIONSHIP_PATTERNS:
-        if pat.search(q_clean):
-            return (
-                RetrievalIntent.RELATIONSHIP_DEPENDENCY,
-                entities,
-                target_pages,
-                "Query explicitly asks for imports, callers, or dependency edges.",
-            )
-
-    # 5. Complex debugging
-    for pat in DEBUGGING_PATTERNS:
-        if pat.search(q_clean):
-            return (
-                RetrievalIntent.COMPLEX_DEBUGGING,
-                entities,
-                target_pages,
-                "Query asks for root cause or failure diagnosis.",
-            )
-
-    # 6. Scanned text intent (Cross-referenced with document store)
+    # 3. Scanned Text Intent (Cross-referenced with target document or repository)
     for pat in SCANNED_PATTERNS:
         if pat.search(q_clean):
-            scanned_pages = page_store.find_pages_by_type(PageType.SCANNED_PAGE)
+            scanned_pages = page_store.find_pages_by_type(PageType.SCANNED_PAGE, filename=target_filename)
+            if not scanned_pages and not target_filename:
+                scanned_pages = page_store.find_pages_by_type(PageType.SCANNED_PAGE)
             if scanned_pages:
                 return (
                     RetrievalIntent.SCANNED_TEXT,
                     entities,
                     target_pages,
-                    f"Query requests scanned content and repository contains {len(scanned_pages)} scanned page(s).",
+                    "Query requests scanned content and matching scanned page(s) exist in repository.",
                 )
             # Safe fallback if no scanned pages exist
             return (
@@ -254,11 +243,13 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
                 "Query mentions scanned concepts, but no scanned pages exist in repository; falling back to text retrieval.",
             )
 
-    # 7. Visual question intent (Cross-referenced with Visual RAG active capability)
+    # 4. Visual Question Intent (Cross-referenced with Visual RAG active capability)
     for pat in VISUAL_PATTERNS:
         if pat.search(q_clean):
             visual_engine = get_visual_engine()
-            visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
+            visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=target_filename)
+            if not visual_pages and not target_filename:
+                visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
             if visual_engine.is_visual_active() and visual_pages:
                 return (
                     RetrievalIntent.VISUAL_QUESTION,
@@ -273,7 +264,56 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
                 "Query asks about diagrams/charts, but Visual RAG is inactive or no visual pages exist; routing safely to text + BM25.",
             )
 
-    # 8. Semantic question starters (e.g. "Explain how transaction settlement rules work")
+    # 5. Multi-hop architecture
+    for pat in MULTI_HOP_PATTERNS:
+        if pat.search(q_clean):
+            return (
+                RetrievalIntent.MULTI_HOP_ARCHITECTURE,
+                entities,
+                target_pages,
+                "Query asks for end-to-end data/architectural flow across multiple components.",
+            )
+
+    # 6. Impact analysis
+    for pat in IMPACT_PATTERNS:
+        if pat.search(q_clean):
+            return (
+                RetrievalIntent.IMPACT_ANALYSIS,
+                entities,
+                target_pages,
+                "Query asks for breaking changes or blast radius analysis.",
+            )
+
+    # 7. Relationship / Dependency
+    for pat in RELATIONSHIP_PATTERNS:
+        if pat.search(q_clean):
+            return (
+                RetrievalIntent.RELATIONSHIP_DEPENDENCY,
+                entities,
+                target_pages,
+                "Query explicitly asks for imports, callers, or dependency edges.",
+            )
+
+    # 8. Complex debugging / Incident Investigation
+    for pat in DEBUGGING_PATTERNS:
+        if pat.search(q_clean):
+            if target_filename:
+                scanned_in_doc = page_store.find_pages_by_type(PageType.SCANNED_PAGE, filename=target_filename)
+                if scanned_in_doc:
+                    return (
+                        RetrievalIntent.SCANNED_TEXT,
+                        entities,
+                        target_pages,
+                        f"Debugging query targets document '{target_filename}' containing scanned pages; routing to OCR pipeline.",
+                    )
+            return (
+                RetrievalIntent.COMPLEX_DEBUGGING,
+                entities,
+                target_pages,
+                "Query asks for root cause or failure diagnosis.",
+            )
+
+    # 9. Semantic question starters (e.g. "Explain how transaction settlement rules work")
     if SEMANTIC_STARTERS.search(q_clean):
         return (
             RetrievalIntent.SEMANTIC_LOOKUP,
@@ -282,7 +322,7 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
             "Query begins with an explanatory/concept question starter.",
         )
 
-    # 9. Exact symbol / definition lookup
+    # 10. Exact symbol / definition lookup
     if re.search(r"(?i)\b(where\s+is\s+.*(defined|located))\b", q_clean) or (
         len(entities) > 0 and len(q_clean.split()) <= 5
     ):
@@ -293,7 +333,7 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
             "Query targets exact function/class/file symbol definition or location.",
         )
 
-    # 10. Default: Semantic concept lookup
+    # 11. Default: Semantic concept lookup
     return (
         RetrievalIntent.SEMANTIC_LOOKUP,
         entities,
@@ -430,30 +470,86 @@ def evaluate_evidence_sufficiency(
     if not results:
         return False, "Zero results retrieved."
 
-    # 1. Result count check
+    # 1. Scanned / Visual Placeholder Detection
+    # A placeholder chunk MUST NEVER be treated as meaningful semantic evidence!
+    top_meta = results[0].get("metadata", {})
+    top_content = results[0].get("content", "")
+    top_is_placeholder = (
+        top_meta.get("is_placeholder") is True
+        or "[Scanned Page" in top_content
+        or "OCR fallback available" in top_content
+        or "[Visual Page" in top_content
+    )
+    if top_is_placeholder:
+        return (
+            False,
+            "Top retrieved result is a scanned page placeholder without extracted text; OCR/Visual escalation required.",
+        )
+
+    # Count placeholders across all retrieved items
+    placeholder_count = sum(
+        1
+        for r in results
+        if r.get("metadata", {}).get("is_placeholder") is True
+        or "[Scanned Page" in r.get("content", "")
+        or "OCR fallback available" in r.get("content", "")
+        or "[Visual Page" in r.get("content", "")
+    )
+    if placeholder_count == len(results):
+        return (
+            False,
+            "All retrieved results are scanned/visual placeholders; OCR/Visual escalation required.",
+        )
+
+    # 2. Key Entities / Query Concepts Check
+    all_content = " ".join(r.get("content", "").lower() for r in results)
+
+    # Check target entities (e.g. 'Node Beta')
+    if plan.target_entities:
+        content_entities = [e.lower() for e in plan.target_entities if not e.endswith(".pdf")]
+        if content_entities:
+            found_any_entity = any(e in all_content for e in content_entities)
+            if not found_any_entity:
+                return False, f"Target entity {content_entities} not present in any retrieved content."
+
+    # Check substantive query terms
+    stopwords = {
+        "what", "why", "how", "when", "where", "who", "which", "does", "did", "was", "were",
+        "is", "are", "the", "and", "for", "with", "from", "into", "that", "this", "according",
+        "about", "show", "shown", "explain", "describe", "between", "under", "above", "below",
+    }
+    substantive_words = [
+        w.lower() for w in re.findall(r"\b[a-zA-Z]{5,}\b", plan.query)
+        if w.lower() not in stopwords and not w.lower().endswith(".pdf")
+    ]
+    if len(substantive_words) >= 2:
+        matching_count = sum(1 for w in substantive_words if w in all_content)
+        if matching_count == 0:
+            return False, f"None of the key query terms {substantive_words[:3]} found in retrieved content."
+
+    # 3. Result count check
     if len(results) < settings.RETRIEVAL_SUFFICIENCY_MIN_RESULTS and plan.top_k > 1:
         return False, f"Retrieved {len(results)} results, below sufficiency minimum of {settings.RETRIEVAL_SUFFICIENCY_MIN_RESULTS}."
 
-    top_score = results[0].get("score", 0.0)
+    # 4. Raw score check (if raw_score preserved from vector/BM25)
+    raw_top_score = results[0].get("raw_score", results[0].get("score", 0.0))
+    if raw_top_score < settings.RETRIEVAL_SUFFICIENCY_MIN_SCORE:
+        return False, f"Top raw score ({raw_top_score:.4f}) is below sufficiency baseline ({settings.RETRIEVAL_SUFFICIENCY_MIN_SCORE})."
 
-    # 2. Similarity baseline check
-    if top_score < settings.RETRIEVAL_SUFFICIENCY_MIN_SCORE:
-        return False, f"Top score ({top_score:.4f}) is below sufficiency baseline ({settings.RETRIEVAL_SUFFICIENCY_MIN_SCORE})."
-
-    # 3. Score margin check
+    # 5. Score margin check
     if len(results) >= 2:
-        margin = top_score - results[1].get("score", 0.0)
-        if top_score < 0.70 and margin < settings.RETRIEVAL_SUFFICIENCY_MIN_MARGIN:
+        margin = results[0].get("score", 0.0) - results[1].get("score", 0.0)
+        if results[0].get("score", 0.0) < 0.70 and margin < settings.RETRIEVAL_SUFFICIENCY_MIN_MARGIN:
             return False, f"Low score margin ({margin:.4f}) indicates ambiguous/diffuse retrieval confidence."
 
-    # 4. Exact symbol verification
+    # 6. Exact symbol verification
     if plan.intent == RetrievalIntent.EXACT_SYMBOL and plan.target_entities:
         target_str = plan.target_entities[0].lower()
         found_exact = any(target_str in r.get("content", "").lower() for r in results)
         if not found_exact:
             return False, f"Exact symbol '{plan.target_entities[0]}' not present in retrieved snippet content."
 
-    return True, f"Evidence sufficient: top_score={top_score:.4f}, count={len(results)}."
+    return True, f"Evidence sufficient: count={len(results)}."
 
 
 def execute_adaptive_retrieval(
@@ -475,6 +571,8 @@ def execute_adaptive_retrieval(
     page_store = get_canonical_page_store()
     ocr_engine = get_ocr_engine()
     visual_engine = get_visual_engine()
+
+    target_file = filter_filename or next((e for e in plan.target_entities if e.endswith(".pdf")), None)
 
     strategy_results: list[list[dict[str, Any]]] = []
 
@@ -522,8 +620,9 @@ def execute_adaptive_retrieval(
     # 4. Lazy OCR Search (On Demand)
     if "ocr" in plan.selected_strategies:
         ocr_items: list[dict[str, Any]] = []
-        # Find target scanned pages
-        scanned_pages = page_store.find_pages_by_type(PageType.SCANNED_PAGE, filename=filter_filename)
+        scanned_pages = page_store.find_pages_by_type(PageType.SCANNED_PAGE, filename=target_file)
+        if not scanned_pages and not target_file:
+            scanned_pages = page_store.find_pages_by_type(PageType.SCANNED_PAGE)
         if plan.target_pages:
             scanned_pages = [p for p in scanned_pages if p.page_number in plan.target_pages]
 
@@ -539,7 +638,7 @@ def execute_adaptive_retrieval(
                         "id": f"ocr_{p_rec.doc_id}_{p_rec.page_number}",
                         "content": ocr_res["text"],
                         "citation": f"{p_rec.filename}:Page {p_rec.page_number} [OCR]",
-                        "score": ocr_res.get("confidence", 0.85),
+                        "score": ocr_res.get("confidence", 0.90),
                         "source_type": "ocr",
                         "metadata": {
                             "filename": p_rec.filename,
@@ -555,7 +654,9 @@ def execute_adaptive_retrieval(
     # 5. Lazy Visual RAG (On Demand)
     if "visual" in plan.selected_strategies:
         vis_items: list[dict[str, Any]] = []
-        visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=filter_filename)
+        visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=target_file)
+        if not visual_pages and not target_file:
+            visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
         if plan.target_pages:
             visual_pages = [p for p in visual_pages if p.page_number in plan.target_pages]
 
@@ -566,17 +667,20 @@ def execute_adaptive_retrieval(
                 page_number=p_rec.page_number,
             )
             for reg in vis_res.get("regions", []):
+                caption = reg.get("caption") or reg.get("diagram_text") or ""
                 vis_items.append(
                     {
                         "id": f"vis_{p_rec.doc_id}_{p_rec.page_number}_{reg['region_id']}",
-                        "content": f"Visual Region ({reg.get('region_type', 'DIAGRAM')}): {reg.get('caption', '')}",
+                        "content": f"Visual Region ({reg.get('region_type', 'DIAGRAM')}): {caption}",
                         "citation": f"{p_rec.filename}:Page {p_rec.page_number} [Visual Region {reg['region_id']}]",
-                        "score": 0.85,
+                        "score": 0.88,
                         "source_type": "visual",
                         "metadata": {
                             "filename": p_rec.filename,
                             "page": p_rec.page_number,
                             "region_id": reg["region_id"],
+                            "diagram_text": reg.get("diagram_text", ""),
+                            "features": reg.get("visual_features", []),
                         },
                     }
                 )
@@ -605,24 +709,76 @@ def execute_adaptive_retrieval(
 
         # Escalate to OCR if target document contains scanned pages and text was insufficient
         if "ocr" not in plan.selected_strategies:
-            candidate_scanned = page_store.find_pages_by_type(PageType.SCANNED_PAGE, filename=filter_filename)
-            if candidate_scanned:
-                p = candidate_scanned[0]
+            candidate_scanned = page_store.find_pages_by_type(PageType.SCANNED_PAGE, filename=target_file)
+            if not candidate_scanned and not target_file:
+                candidate_scanned = page_store.find_pages_by_type(PageType.SCANNED_PAGE)
+
+            # Identify candidate pages from placeholder results
+            placeholder_pnums: list[int] = []
+            for r in fused:
+                meta = r.get("metadata", {})
+                if meta.get("is_placeholder") or "[Scanned Page" in r.get("content", ""):
+                    pn = meta.get("page") or meta.get("page_number")
+                    if pn:
+                        try:
+                            placeholder_pnums.append(int(pn))
+                        except (ValueError, TypeError):
+                            pass
+            if placeholder_pnums and candidate_scanned:
+                matching_p = [p for p in candidate_scanned if p.page_number in placeholder_pnums]
+                if matching_p:
+                    candidate_scanned = matching_p
+
+            ocr_esc_items: list[dict[str, Any]] = []
+            for p in candidate_scanned[: settings.MAX_OCR_PAGES_PER_REQUEST]:
                 ocr_esc = ocr_engine.process_page_ocr(doc_id=p.doc_id, filename=p.filename, page_number=p.page_number)
                 if ocr_esc.get("text"):
-                    escalated_lists.append(
-                        [
-                            {
-                                "id": f"ocr_{p.doc_id}_{p.page_number}",
-                                "content": ocr_esc["text"],
-                                "citation": f"{p.filename}:Page {p.page_number} [OCR]",
-                                "score": 0.70,
-                                "source_type": "ocr",
-                                "metadata": {"filename": p.filename, "page": p.page_number},
-                            }
-                        ]
+                    ocr_esc_items.append(
+                        {
+                            "id": f"ocr_{p.doc_id}_{p.page_number}",
+                            "content": ocr_esc["text"],
+                            "citation": f"{p.filename}:Page {p.page_number} [OCR]",
+                            "score": ocr_esc.get("confidence", 0.90),
+                            "source_type": "ocr",
+                            "metadata": {
+                                "filename": p.filename,
+                                "page": p.page_number,
+                                "cached": ocr_esc.get("cached", False),
+                            },
+                        }
                     )
-                    trace.append(f"Escalation added OCR fallback for {p.filename}:Page {p.page_number}")
+                    trace.append(f"Escalation added OCR for {p.filename}:Page {p.page_number}")
+            if ocr_esc_items:
+                escalated_lists.append(ocr_esc_items)
+
+        # Escalate to Visual if visual engine is active
+        if "visual" not in plan.selected_strategies and visual_engine.is_visual_active():
+            candidate_visual = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=target_file)
+            if not candidate_visual and not target_file:
+                candidate_visual = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
+            vis_esc_items: list[dict[str, Any]] = []
+            for p in candidate_visual[: settings.MAX_VISUAL_PAGES_PER_REQUEST]:
+                vis_esc = visual_engine.process_page_visual(doc_id=p.doc_id, filename=p.filename, page_number=p.page_number)
+                for reg in vis_esc.get("regions", []):
+                    caption = reg.get("caption") or reg.get("diagram_text") or ""
+                    vis_esc_items.append(
+                        {
+                            "id": f"vis_{p.doc_id}_{p.page_number}_{reg['region_id']}",
+                            "content": f"Visual Region ({reg.get('region_type', 'DIAGRAM')}): {caption}",
+                            "citation": f"{p.filename}:Page {p.page_number} [Visual Region {reg['region_id']}]",
+                            "score": 0.88,
+                            "source_type": "visual",
+                            "metadata": {
+                                "filename": p.filename,
+                                "page": p.page_number,
+                                "region_id": reg["region_id"],
+                                "diagram_text": reg.get("diagram_text", ""),
+                            },
+                        }
+                    )
+                    trace.append(f"Escalation added Visual RAG for {p.filename}:Page {p.page_number}")
+            if vis_esc_items:
+                escalated_lists.append(vis_esc_items)
 
         # Escalate to Graph if target entities exist
         if "graph" not in plan.selected_strategies and plan.target_entities:
@@ -648,5 +804,19 @@ def execute_adaptive_retrieval(
 
         fused = fuse_and_deduplicate(escalated_lists, top_k=top_k)
         trace.append(f"Final post-escalation fused results: {len(fused)}")
+
+    # Clean placeholders from final results when real results exist
+    clean_results = [
+        r
+        for r in fused
+        if not (
+            r.get("metadata", {}).get("is_placeholder") is True
+            or "[Scanned Page" in r.get("content", "")
+            or "OCR fallback available" in r.get("content", "")
+            or "[Visual Page" in r.get("content", "")
+        )
+    ]
+    if clean_results:
+        fused = clean_results
 
     return fused, plan, trace

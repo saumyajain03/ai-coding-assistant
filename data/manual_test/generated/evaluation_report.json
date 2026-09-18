@@ -1,0 +1,385 @@
+[
+  {
+    "id": "eval_case_01_semantic_overview",
+    "query": "Explain the high-level privacy-first architecture and local execution model of SentinelForge.",
+    "expected_mode": "vector",
+    "actual_strategies": [
+      "vector"
+    ],
+    "actual_intent": "semantic_lookup",
+    "expected_sources": [
+      "normal_text.pdf"
+    ],
+    "retrieved_citations": [
+      "normal_text.pdf:Page 1 (L1-6)",
+      "mixed_document.pdf:Page 1 (L1-5)",
+      "security_spec.md:L1-4",
+      "config/settings.json:L1-1",
+      "mixed_document.pdf:Page 3 (L7-11)"
+    ],
+    "retrieved_pages": [
+      1,
+      1,
+      3
+    ],
+    "latency_ms": 50.46,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: semantic_text via ['vector'] (Query begins with an explanatory/concept question starter.)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_02_exact_symbol",
+    "query": "Where is authenticate_user defined in the codebase?",
+    "expected_mode": "lexical",
+    "actual_strategies": [
+      "lexical",
+      "vector"
+    ],
+    "actual_intent": "exact_symbol",
+    "expected_sources": [
+      "app/auth.py"
+    ],
+    "retrieved_citations": [
+      "app/auth.py:L11-40",
+      "tests/test_auth.py:L9-13",
+      "tests/test_auth.py:L16-19",
+      "app/main.py:L10-20",
+      "normal_text.pdf:Page 2 (L7-12)"
+    ],
+    "retrieved_pages": [
+      2
+    ],
+    "latency_ms": 44.19,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: exact_symbol via ['lexical', 'vector'] (Query targets exact function/class/file symbol definition or location.)",
+      "Vector search returned 5 items",
+      "Lexical BM25 search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9997, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_03_exact_error_term",
+    "query": "Why does authenticate_user raise PermissionError when user is inactive or missing?",
+    "expected_mode": "lexical",
+    "actual_strategies": [
+      "vector",
+      "lexical",
+      "graph"
+    ],
+    "actual_intent": "complex_debugging",
+    "expected_sources": [
+      "app/auth.py"
+    ],
+    "retrieved_citations": [
+      "app/auth.py:L11-40",
+      "tests/test_auth.py:L16-19",
+      "tests/test_database.py:L8-14",
+      "tests/test_auth.py:L9-13",
+      "app/auth.py:L17-17"
+    ],
+    "retrieved_pages": [],
+    "latency_ms": 61.64,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: complex_debugging via ['vector', 'lexical', 'graph'] (Query asks for root cause or failure diagnosis.)",
+      "Vector search returned 5 items",
+      "Lexical BM25 search returned 5 items",
+      "Graph traversal returned 1 relation edges",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9997, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_04_dependency_query",
+    "query": "What does app/auth.py import and depend on?",
+    "expected_mode": "graph",
+    "actual_strategies": [
+      "graph"
+    ],
+    "actual_intent": "relationship_dependency",
+    "expected_sources": [
+      "app/auth.py",
+      "app/database.py",
+      "app/cache.py"
+    ],
+    "retrieved_citations": [
+      "app/auth.py:L5-5",
+      "app/auth.py:L7-7",
+      "app/auth.py:L8-8",
+      "app/auth.py:L11-11",
+      "tests/test_auth.py:L5-5"
+    ],
+    "retrieved_pages": [],
+    "latency_ms": 2.31,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: dependency_question via ['graph'] (Query explicitly asks for imports, callers, or dependency edges.)",
+      "Graph traversal returned 9 relation edges",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_05_multihop_dependency",
+    "query": "How does data flow from main.py to database.py through AuthService?",
+    "expected_mode": "graph",
+    "actual_strategies": [
+      "graph",
+      "vector"
+    ],
+    "actual_intent": "multi_hop_architecture",
+    "expected_sources": [
+      "app/main.py",
+      "app/auth.py",
+      "app/database.py"
+    ],
+    "retrieved_citations": [
+      "app/auth.py:L11-40",
+      "app/main.py:L5-5",
+      "README.md:L1-10",
+      "app/main.py:L7-7",
+      "app/main.py:L10-20"
+    ],
+    "retrieved_pages": [],
+    "latency_ms": 51.04,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: multi_hop_architecture via ['graph', 'vector'] (Query asks for end-to-end data/architectural flow across multiple components.)",
+      "Vector search returned 5 items",
+      "Graph traversal returned 4 relation edges",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_06_normal_pdf_page",
+    "query": "What are the sandbox execution limits, memory bounds, and network restrictions in normal_text.pdf?",
+    "expected_mode": "vector",
+    "actual_strategies": [
+      "vector"
+    ],
+    "actual_intent": "semantic_lookup",
+    "expected_sources": [
+      "normal_text.pdf"
+    ],
+    "retrieved_citations": [
+      "normal_text.pdf:Page 4 (L19-24)",
+      "visual_architecture.pdf:Page 3 (L3-3)",
+      "payment_guide.md:L4-6",
+      "config/settings.json:L1-4",
+      "mixed_document.pdf:Page 1 (L1-5)"
+    ],
+    "retrieved_pages": [
+      4,
+      3,
+      1
+    ],
+    "latency_ms": 47.58,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_07_scanned_pdf_ocr",
+    "query": "What does the scanned document say about JWT tokens and authentication in scanned_text.pdf?",
+    "expected_mode": "ocr",
+    "actual_strategies": [
+      "ocr",
+      "vector"
+    ],
+    "actual_intent": "scanned_text",
+    "expected_sources": [
+      "scanned_text.pdf"
+    ],
+    "retrieved_citations": [
+      "mixed_document.pdf:Page 2 (L6-6)",
+      "auth_docs.md:L1-3",
+      "normal_text.pdf:Page 2 (L7-12)",
+      "scanned_text.pdf:Page 1 (L1-1)"
+    ],
+    "retrieved_pages": [
+      2,
+      2,
+      1
+    ],
+    "latency_ms": 48.51,
+    "verdict": "MANUAL REVIEW",
+    "notes": [
+      "Tesseract binary not installed on host machine. System gracefully fell back to text/BM25."
+    ],
+    "trace": [
+      "Initial Plan: scanned_text via ['ocr', 'vector'] (Query requests scanned content and repository contains 4 scanned page(s).)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9997, count=4.)"
+    ]
+  },
+  {
+    "id": "eval_case_08_visual_diagram",
+    "query": "Show me the architecture diagram and flowchart connecting User to API Gateway and Retrieval Router in visual_architecture.pdf.",
+    "expected_mode": "visual",
+    "actual_strategies": [
+      "vector"
+    ],
+    "actual_intent": "semantic_lookup",
+    "expected_sources": [
+      "visual_architecture.pdf"
+    ],
+    "retrieved_citations": [
+      "visual_architecture.pdf:Page 1 (L1-1)",
+      "visual_architecture.pdf:Page 2 (L2-2)",
+      "service_api.md:L1-2",
+      "visual_architecture.pdf:Page 3 (L3-3)",
+      "api_guide.md:L1-3"
+    ],
+    "retrieved_pages": [
+      1,
+      2,
+      3
+    ],
+    "latency_ms": 46.1,
+    "verdict": "MANUAL REVIEW",
+    "notes": [
+      "Visual RAG disabled by default for 512MB RAM constraint. System gracefully fell back to text/BM25 without faking embeddings."
+    ],
+    "trace": [
+      "Initial Plan: semantic_text via ['vector'] (Query asks about diagrams/charts, but Visual RAG is inactive or no visual pages exist; routing safely to text + BM25.)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_09_mixed_pdf_routing",
+    "query": "What is described in the pipeline processing flow and data transformation stages in mixed_document.pdf?",
+    "expected_mode": "vector",
+    "actual_strategies": [
+      "vector"
+    ],
+    "actual_intent": "semantic_lookup",
+    "expected_sources": [
+      "mixed_document.pdf"
+    ],
+    "retrieved_citations": [
+      "mixed_document.pdf:Page 3 (L7-11)",
+      "visual_architecture.pdf:Page 1 (L1-1)",
+      "payment_guide.md:L1-3",
+      "normal_text.pdf:Page 3 (L13-18)",
+      "mixed_document.pdf:Page 1 (L1-5)"
+    ],
+    "retrieved_pages": [
+      3,
+      1,
+      3,
+      1
+    ],
+    "latency_ms": 46.82,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: semantic_text via ['vector'] (Query begins with an explanatory/concept question starter.)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_10_neighboring_page_context",
+    "query": "What storage responsibilities are coordinated between SQLite, ChromaDB, and BM25 in normal_text.pdf?",
+    "expected_mode": "vector",
+    "actual_strategies": [
+      "vector"
+    ],
+    "actual_intent": "semantic_lookup",
+    "expected_sources": [
+      "normal_text.pdf"
+    ],
+    "retrieved_citations": [
+      "normal_text.pdf:Page 3 (L13-18)",
+      "mixed_document.pdf:Page 4 (L12-12)",
+      "mixed_document.pdf:Page 3 (L7-11)",
+      "config/settings.json:L1-5",
+      "config/settings.json:L1-4"
+    ],
+    "retrieved_pages": [
+      3,
+      4,
+      3
+    ],
+    "latency_ms": 45.28,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_11_prompt_injection_safety",
+    "query": "Find the security document with adversarial instructions and verify prompt injection handling in security_doc.txt.",
+    "expected_mode": "lexical",
+    "actual_strategies": [
+      "vector"
+    ],
+    "actual_intent": "semantic_lookup",
+    "expected_sources": [
+      "security_doc.txt"
+    ],
+    "retrieved_citations": [
+      "security_doc.txt:L1-8",
+      "normal_text.pdf:Page 5 (L25-30)",
+      "README.md:L1-10",
+      "app/auth.py:L11-40",
+      "mixed_document.pdf:Page 2 (L6-6)"
+    ],
+    "retrieved_pages": [
+      5,
+      2
+    ],
+    "latency_ms": 45.33,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+      "Vector search returned 5 items",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  },
+  {
+    "id": "eval_case_12_repo_inspection",
+    "query": "Who imports or calls AuthService in the repository?",
+    "expected_mode": "graph",
+    "actual_strategies": [
+      "graph"
+    ],
+    "actual_intent": "relationship_dependency",
+    "expected_sources": [
+      "app/main.py",
+      "app/auth.py"
+    ],
+    "retrieved_citations": [
+      "app/auth.py:L14-14",
+      "app/auth.py:L17-17",
+      "app/auth.py:L32-32",
+      "app/auth.py:L11-11",
+      "tests/test_auth.py:L6-6"
+    ],
+    "retrieved_pages": [],
+    "latency_ms": 1.61,
+    "verdict": "PASS",
+    "notes": [],
+    "trace": [
+      "Initial Plan: dependency_question via ['graph'] (Query explicitly asks for imports, callers, or dependency edges.)",
+      "Graph traversal returned 6 relation edges",
+      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+    ]
+  }
+]

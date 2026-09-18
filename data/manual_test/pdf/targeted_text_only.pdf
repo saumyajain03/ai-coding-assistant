@@ -1,0 +1,71 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 6 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 482 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(SentinelForge Cryptographic Storage Protocol Specification.) Tj
+0 -18 Td
+(This document defines storage voucher generation and key derivation parameters.) Tj
+0 -18 Td
+(TARGET_FACT_01: The primary storage voucher encryption algorithm is AES-256-GCM with PBKDF2.) Tj
+0 -18 Td
+(Key rotation is enforced every 90 days with ECDSA-P256 authentication.) Tj
+0 -18 Td
+(All voucher signatures must be validated against the local root certificate store.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 7 0 R /Resources << /Font << /F1 8 0 R >> >> >>
+endobj
+7 0 obj
+<< /Length 328 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+(Cryptographic Key Schedule and Salt Parameters.) Tj
+0 -18 Td
+(PBKDF2 iteration count is fixed at 10000 rounds using HMAC-SHA512.) Tj
+0 -18 Td
+(Master keys are stored in encrypted non-volatile local storage.) Tj
+0 -18 Td
+(Session keys are discarded immediately upon transaction completion.) Tj
+0 -18 Td
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000780 00000 n 
+0000000850 00000 n 
+0000000976 00000 n 
+0000001355 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+1425
+%%EOF
