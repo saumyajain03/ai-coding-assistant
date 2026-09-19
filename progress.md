@@ -266,6 +266,26 @@ This log tracks every phase of Project SentinelForge: files created, architectur
 
 ---
 
+### 4. Dynamic Semantic Visual Routing & Caption Sufficiency Resolution
+- **Issue Solved**: Queries without visual keywords (`"diagram"`, `"chart"`, `"image"`) targeting visual-heavy documents previously selected `['vector']` and failed to escalate because neighboring text/caption was mistakenly considered sufficient.
+- **Root Cause & Fix**:
+  1. `evaluate_evidence_sufficiency()` was enhanced to detect when top retrieved candidates come from a `VISUAL_HEAVY_PAGE` whose text layer is merely a caption or figure label. It checks whether the snippet substantively answers the query terms, rejecting sparse captions as insufficient and mandating Visual RAG escalation.
+  2. Concept alignment across individual chunks: Checks whether any individual snippet actually answers the query concepts instead of falsely aggregating scattered words across disparate documents.
+  3. Visual page prioritization in escalation: In `execute_adaptive_retrieval()`, candidate visual pages are ordered prioritizing the documents and pages referenced in initial search results.
+  4. Metadata propagation: `src/rag/chunker.py` preserves `page_type`, `visual_status`, and `available_modalities` directly in chunk metadata.
+- **Verification on Engineering Architecture Test Suite (`data/manual_test/test_engineering_semantic.py`)**:
+  - `ENG_01_THERMAL_AEROGEL`: *"What substance prevents extreme heat loss across the outer structural envelope?"* -> **PASS** (Escalated to Visual RAG, retrieved `Aerogel Silica Matrix Blanket`, score: 0.98).
+  - `ENG_02_SUPERALLOY_HIGH_TEMP`: *"Which alloy maintains ductile integrity under intense high-temperature oxidative environments?"* -> **PASS** (Escalated to Visual RAG, retrieved `Inconel 718 Nickel-Chromium Superalloy`, score: 0.7635).
+  - `ENG_03_FOUNDATION_SALINE_RESISTANCE`: *"What protects the foundation base from saline groundwater corrosion?"* -> **PASS** (Text vector, retrieved `Austenitic Stainless Steel 316L with Molybdenum passivation`).
+  - `ENG_04_SEISMIC_TENSION_MEMBER`: *"Which material counteracts severe earthquake ground shaking and bending strain in the concrete slab?"* -> **PASS** (Text vector, retrieved `CFRP tendons`).
+  - `ENG_05_HYDROCARBON_SEAL_GASKET`: *"What element provides sealing protection against hazardous hydrocarbon emissions at pipe junctions?"* -> **PASS** (Text vector, retrieved `Perfluoroelastomer (FFKM) Kalrez O-Rings`).
+  - **All 5/5 cases passed (100.0%)** with zero hardcoded keywords or dictionaries.
+- **Full Test Suite Status**:
+  - All 83 automated tests in `pytest tests/` passing in 3.66s.
+  - Linter: `ruff check .` 100% clean with 0 errors.
+
+---
+
 ## Phase 3 Log: Defensive Sandbox Engine (Next)
 - **Goal**: Implement isolated execution for Python and Node.js/TypeScript workflows, enforce process limits (`RLIMIT_AS`, `RLIMIT_NPROC`, buffer caps), and test adversarial containment (fork bombs, memory exhaustion, traversal attacks).
 
