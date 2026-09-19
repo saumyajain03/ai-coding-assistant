@@ -86,8 +86,10 @@ SCANNED_PATTERNS = [
 ]
 
 VISUAL_PATTERNS = [
-    re.compile(r"(?i)\b(diagram|flowchart|architecture chart|drawing|plot|visual layout|figure)\b"),
+    re.compile(r"(?i)\b(diagram|flowchart|chart|drawing|plot|visual|figure|schematic|topology|graph|wireframe|illustration|blueprint)\b"),
 ]
+
+
 
 SEMANTIC_STARTERS = re.compile(
     r"(?i)^(explain|describe|overview|what\s+is|how\s+(does|do|can|to)\b|tell\s+me\s+about|summary\s+of|discuss|details\s+of)\b"
@@ -180,13 +182,20 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
                         target_pages,
                         f"Page {p_num} is classified in canonical store as SCANNED_PAGE; routing to OCR pipeline.",
                     )
-                if page_rec.page_type == PageType.VISUAL_HEAVY_PAGE:
-                    return (
-                        RetrievalIntent.VISUAL_QUESTION,
-                        entities,
-                        target_pages,
-                        f"Page {p_num} is classified in canonical store as VISUAL_HEAVY_PAGE; routing to Visual RAG pipeline.",
-                    )
+                if page_rec.page_type == PageType.VISUAL_HEAVY_PAGE or (
+                    page_rec.page_type == PageType.MIXED_PAGE
+                    and page_rec.available_modalities
+                    and "visual" in page_rec.available_modalities
+                ):
+                    visual_engine = get_visual_engine()
+                    if visual_engine.is_visual_active():
+                        return (
+                            RetrievalIntent.VISUAL_QUESTION,
+                            entities,
+                            target_pages,
+                            f"Page {p_num} is classified with visual modality; routing to Visual RAG pipeline.",
+                        )
+
                 if page_rec.page_type == PageType.TEXT_PAGE:
                     return (
                         RetrievalIntent.SEMANTIC_LOOKUP,
@@ -247,9 +256,9 @@ def classify_query_intent(query: str) -> tuple[RetrievalIntent, list[str], list[
     for pat in VISUAL_PATTERNS:
         if pat.search(q_clean):
             visual_engine = get_visual_engine()
-            visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=target_filename)
+            visual_pages = page_store.find_pages_by_modality("visual", filename=target_filename)
             if not visual_pages and not target_filename:
-                visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
+                visual_pages = page_store.find_pages_by_modality("visual")
             if visual_engine.is_visual_active() and visual_pages:
                 return (
                     RetrievalIntent.VISUAL_QUESTION,
@@ -486,7 +495,60 @@ def evaluate_evidence_sufficiency(
             "Top retrieved result is a scanned page placeholder without extracted text; OCR/Visual escalation required.",
         )
 
-    # Count placeholders across all retrieved items
+    # 0. Check if genuine visual understanding or high-confidence visual evidence exists
+    for r in results:
+        if r.get("source_type") == "visual":
+            if r.get("metadata", {}).get("is_semantic_match") is True or r.get("score", 0.0) >= 0.70:
+                return True, "Evidence sufficient: genuine semantic visual understanding retrieved."
+
+    # Substantive query terms
+    stopwords = {
+        "what", "why", "how", "when", "where", "who", "which", "does", "did", "was", "were",
+        "is", "are", "the", "and", "for", "with", "from", "into", "that", "this", "according",
+        "about", "show", "shown", "explain", "describe", "between", "under", "above", "below",
+    }
+    substantive_words = [
+        w.lower() for w in re.findall(r"\b[a-zA-Z]{5,}\b", plan.query)
+        if w.lower() not in stopwords and not w.lower().endswith(".pdf")
+    ]
+
+    # 1. Visual-Heavy Page Caption / Incomplete Visual Inspection Check
+    # If Visual RAG is active and candidate results originate from a visual-heavy page,
+    # minimal text/caption layer alone is NOT sufficient evidence for substantive queries.
+    visual_engine = get_visual_engine()
+    page_store = get_canonical_page_store()
+    has_visual_source = any(r.get("source_type") == "visual" for r in results)
+
+    if visual_engine.is_visual_active() and not has_visual_source:
+        for r in results[:2]:
+            meta = r.get("metadata", {})
+            fn = meta.get("filename")
+            pn = meta.get("page") or meta.get("page_number")
+            is_vis_page = False
+            p_type = str(meta.get("page_type", "")).lower()
+            if "visual_heavy" in p_type or p_type == PageType.VISUAL_HEAVY_PAGE.value.lower():
+                is_vis_page = True
+            elif "visual" in str(meta.get("available_modalities", "")):
+                is_vis_page = True
+            elif fn and pn:
+                try:
+                    prec = page_store.get_page(fn, int(pn))
+                    if prec and prec.page_type == PageType.VISUAL_HEAVY_PAGE:
+                        is_vis_page = True
+                except Exception:
+                    pass
+
+            if is_vis_page:
+                snippet = r.get("content", "").strip()
+                matched_in_snippet = sum(1 for w in substantive_words if w in snippet.lower())
+                # If snippet is short or doesn't fully answer substantive query terms
+                if matched_in_snippet < max(1, min(2, len(substantive_words))):
+                    return (
+                        False,
+                        f"Top candidate evidence from visual-heavy page '{fn}:Page {pn}' is limited to text/caption; Visual RAG escalation required.",
+                    )
+
+    # 2. Reject Placeholder-Only Results
     placeholder_count = sum(
         1
         for r in results
@@ -495,13 +557,14 @@ def evaluate_evidence_sufficiency(
         or "OCR fallback available" in r.get("content", "")
         or "[Visual Page" in r.get("content", "")
     )
+
     if placeholder_count == len(results):
         return (
             False,
             "All retrieved results are scanned/visual placeholders; OCR/Visual escalation required.",
         )
 
-    # 2. Key Entities / Query Concepts Check
+    # 3. Key Entities / Query Concepts Check
     all_content = " ".join(r.get("content", "").lower() for r in results)
 
     # Check target entities (e.g. 'Node Beta')
@@ -513,36 +576,42 @@ def evaluate_evidence_sufficiency(
                 return False, f"Target entity {content_entities} not present in any retrieved content."
 
     # Check substantive query terms
-    stopwords = {
-        "what", "why", "how", "when", "where", "who", "which", "does", "did", "was", "were",
-        "is", "are", "the", "and", "for", "with", "from", "into", "that", "this", "according",
-        "about", "show", "shown", "explain", "describe", "between", "under", "above", "below",
-    }
-    substantive_words = [
-        w.lower() for w in re.findall(r"\b[a-zA-Z]{5,}\b", plan.query)
-        if w.lower() not in stopwords and not w.lower().endswith(".pdf")
-    ]
     if len(substantive_words) >= 2:
         matching_count = sum(1 for w in substantive_words if w in all_content)
         if matching_count == 0:
             return False, f"None of the key query terms {substantive_words[:3]} found in retrieved content."
 
-    # 3. Result count check
+        # Check if individual snippets lack substantive terms and candidate documents have visual pages
+        if visual_engine.is_visual_active() and not has_visual_source:
+            snippet_matches = [
+                sum(1 for w in substantive_words if w in r.get("content", "").lower())
+                for r in results
+            ]
+            best_match = max(snippet_matches) if snippet_matches else 0
+            if best_match == 0:
+                doc_filenames = {r.get("metadata", {}).get("filename") for r in results if r.get("metadata", {}).get("filename")}
+                if any(page_store.find_pages_by_modality("visual", filename=f) for f in doc_filenames):
+                    return (
+                        False,
+                        f"Text snippets lack substantive query terms {substantive_words[:3]} and candidate document contains visual pages; Visual RAG escalation required.",
+                    )
+
+    # 4. Result count check
     if len(results) < settings.RETRIEVAL_SUFFICIENCY_MIN_RESULTS and plan.top_k > 1:
         return False, f"Retrieved {len(results)} results, below sufficiency minimum of {settings.RETRIEVAL_SUFFICIENCY_MIN_RESULTS}."
 
-    # 4. Raw score check (if raw_score preserved from vector/BM25)
+    # 5. Raw score check (if raw_score preserved from vector/BM25)
     raw_top_score = results[0].get("raw_score", results[0].get("score", 0.0))
     if raw_top_score < settings.RETRIEVAL_SUFFICIENCY_MIN_SCORE:
         return False, f"Top raw score ({raw_top_score:.4f}) is below sufficiency baseline ({settings.RETRIEVAL_SUFFICIENCY_MIN_SCORE})."
 
-    # 5. Score margin check
+    # 6. Score margin check
     if len(results) >= 2:
         margin = results[0].get("score", 0.0) - results[1].get("score", 0.0)
         if results[0].get("score", 0.0) < 0.70 and margin < settings.RETRIEVAL_SUFFICIENCY_MIN_MARGIN:
             return False, f"Low score margin ({margin:.4f}) indicates ambiguous/diffuse retrieval confidence."
 
-    # 6. Exact symbol verification
+    # 7. Exact symbol verification
     if plan.intent == RetrievalIntent.EXACT_SYMBOL and plan.target_entities:
         target_str = plan.target_entities[0].lower()
         found_exact = any(target_str in r.get("content", "").lower() for r in results)
@@ -653,37 +722,17 @@ def execute_adaptive_retrieval(
 
     # 5. Lazy Visual RAG (On Demand)
     if "visual" in plan.selected_strategies:
-        vis_items: list[dict[str, Any]] = []
-        visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=target_file)
+        visual_pages = page_store.find_pages_by_modality("visual", filename=target_file)
         if not visual_pages and not target_file:
-            visual_pages = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
+            visual_pages = page_store.find_pages_by_modality("visual")
         if plan.target_pages:
             visual_pages = [p for p in visual_pages if p.page_number in plan.target_pages]
 
-        for p_rec in visual_pages[: settings.MAX_VISUAL_PAGES_PER_REQUEST]:
-            vis_res = visual_engine.process_page_visual(
-                doc_id=p_rec.doc_id,
-                filename=p_rec.filename,
-                page_number=p_rec.page_number,
-            )
-            for reg in vis_res.get("regions", []):
-                caption = reg.get("caption") or reg.get("diagram_text") or ""
-                vis_items.append(
-                    {
-                        "id": f"vis_{p_rec.doc_id}_{p_rec.page_number}_{reg['region_id']}",
-                        "content": f"Visual Region ({reg.get('region_type', 'DIAGRAM')}): {caption}",
-                        "citation": f"{p_rec.filename}:Page {p_rec.page_number} [Visual Region {reg['region_id']}]",
-                        "score": 0.88,
-                        "source_type": "visual",
-                        "metadata": {
-                            "filename": p_rec.filename,
-                            "page": p_rec.page_number,
-                            "region_id": reg["region_id"],
-                            "diagram_text": reg.get("diagram_text", ""),
-                            "features": reg.get("visual_features", []),
-                        },
-                    }
-                )
+        vis_items = visual_engine.query_visual_regions(
+            query=query,
+            visual_pages=visual_pages[: settings.MAX_VISUAL_PAGES_PER_REQUEST],
+            top_k=top_k,
+        )
         if vis_items:
             strategy_results.append(vis_items)
             trace.append(f"Lazy Visual RAG returned {len(vis_items)} visual region(s)")
@@ -753,32 +802,50 @@ def execute_adaptive_retrieval(
 
         # Escalate to Visual if visual engine is active
         if "visual" not in plan.selected_strategies and visual_engine.is_visual_active():
-            candidate_visual = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE, filename=target_file)
-            if not candidate_visual and not target_file:
-                candidate_visual = page_store.find_pages_by_type(PageType.VISUAL_HEAVY_PAGE)
-            vis_esc_items: list[dict[str, Any]] = []
-            for p in candidate_visual[: settings.MAX_VISUAL_PAGES_PER_REQUEST]:
-                vis_esc = visual_engine.process_page_visual(doc_id=p.doc_id, filename=p.filename, page_number=p.page_number)
-                for reg in vis_esc.get("regions", []):
-                    caption = reg.get("caption") or reg.get("diagram_text") or ""
-                    vis_esc_items.append(
-                        {
-                            "id": f"vis_{p.doc_id}_{p.page_number}_{reg['region_id']}",
-                            "content": f"Visual Region ({reg.get('region_type', 'DIAGRAM')}): {caption}",
-                            "citation": f"{p.filename}:Page {p.page_number} [Visual Region {reg['region_id']}]",
-                            "score": 0.88,
-                            "source_type": "visual",
-                            "metadata": {
-                                "filename": p.filename,
-                                "page": p.page_number,
-                                "region_id": reg["region_id"],
-                                "diagram_text": reg.get("diagram_text", ""),
-                            },
-                        }
+            # Identify candidate visual pages, prioritizing documents and pages in initial results
+            doc_pnums: set[tuple[str, int]] = set()
+            doc_names: list[str] = []
+            for r in fused:
+                meta = r.get("metadata", {})
+                fn = meta.get("filename")
+                pn = meta.get("page") or meta.get("page_number")
+                if fn and fn not in doc_names:
+                    doc_names.append(fn)
+                if fn and pn:
+                    try:
+                        doc_pnums.add((fn, int(pn)))
+                    except Exception:
+                        pass
+
+            candidate_visual: list[Any] = []
+            if target_file:
+                candidate_visual = page_store.find_pages_by_modality("visual", filename=target_file)
+            elif doc_names:
+                for fn in doc_names:
+                    candidate_visual.extend(page_store.find_pages_by_modality("visual", filename=fn))
+
+            if not candidate_visual:
+                candidate_visual = page_store.find_pages_by_modality("visual")
+
+            # Prioritize candidate pages directly referenced in initial results
+            if candidate_visual:
+                candidate_visual.sort(
+                    key=lambda p: (
+                        0 if (p.filename, p.page_number) in doc_pnums else 1,
+                        doc_names.index(p.filename) if p.filename in doc_names else 99,
+                        p.page_number,
                     )
-                    trace.append(f"Escalation added Visual RAG for {p.filename}:Page {p.page_number}")
+                )
+
+            vis_esc_items = visual_engine.query_visual_regions(
+                query=query,
+                visual_pages=candidate_visual[: settings.MAX_VISUAL_PAGES_PER_REQUEST],
+                top_k=top_k,
+            )
             if vis_esc_items:
                 escalated_lists.append(vis_esc_items)
+                trace.append(f"Escalation added Visual RAG for {len(vis_esc_items)} region(s)")
+
 
         # Escalate to Graph if target entities exist
         if "graph" not in plan.selected_strategies and plan.target_entities:

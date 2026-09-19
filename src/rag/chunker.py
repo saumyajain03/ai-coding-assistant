@@ -27,6 +27,24 @@ def chunk_sections(
         if not content:
             continue
 
+        base_meta = {
+            "filename": filename,
+            "file_type": file_type,
+            "sha256": file_hash,
+            "page": sec.page if sec.page is not None else -1,
+            "start_line": sec.start_line,
+            "end_line": sec.end_line,
+            "section": sec.section_name or "",
+            "chunk_type": sec.chunk_type,
+        }
+        if sec.metadata:
+            for k, v in sec.metadata.items():
+                if k not in base_meta:
+                    if isinstance(v, list):
+                        base_meta[k] = ",".join(str(item) for item in v)
+                    elif isinstance(v, (str, int, float, bool)):
+                        base_meta[k] = v
+
         # If section is within character bounds, keep it intact
         if len(content) <= max_chunk_chars:
             chunk_id = f"{file_hash[:12]}_{sec_idx}"
@@ -34,16 +52,7 @@ def chunk_sections(
                 {
                     "id": chunk_id,
                     "text": content,
-                    "metadata": {
-                        "filename": filename,
-                        "file_type": file_type,
-                        "sha256": file_hash,
-                        "page": sec.page if sec.page is not None else -1,
-                        "start_line": sec.start_line,
-                        "end_line": sec.end_line,
-                        "section": sec.section_name or "",
-                        "chunk_type": sec.chunk_type,
-                    },
+                    "metadata": dict(base_meta),
                 }
             )
         else:
@@ -61,20 +70,16 @@ def chunk_sections(
                 rel_end_line = min(sec.start_line + end_idx - 1, sec.end_line)
                 sub_id = f"{file_hash[:12]}_{sec_idx}_{start_idx}"
 
+                sub_meta = dict(base_meta)
+                sub_meta["start_line"] = rel_start_line
+                sub_meta["end_line"] = rel_end_line
+                sub_meta["section"] = f"{sec.section_name or ''} (part)"
+
                 chunks.append(
                     {
                         "id": sub_id,
                         "text": sub_content,
-                        "metadata": {
-                            "filename": filename,
-                            "file_type": file_type,
-                            "sha256": file_hash,
-                            "page": sec.page if sec.page is not None else -1,
-                            "start_line": rel_start_line,
-                            "end_line": rel_end_line,
-                            "section": f"{sec.section_name or ''} (part)",
-                            "chunk_type": sec.chunk_type,
-                        },
+                        "metadata": sub_meta,
                     }
                 )
 

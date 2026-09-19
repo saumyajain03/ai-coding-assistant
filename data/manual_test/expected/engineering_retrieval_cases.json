@@ -1,0 +1,90 @@
+[
+  {
+    "case_id": "ENG_01_THERMAL_AEROGEL",
+    "description": "Visual diagram callout: query asks about outer thermal envelope heat retention with zero lexical overlap with 'Aerogel'.",
+    "query": "What substance prevents extreme heat loss across the outer structural envelope?",
+    "document": "engineering_architecture_spec.pdf",
+    "target_page": 2,
+    "expected_answer_concepts": [
+      "Aerogel Silica Matrix Blanket",
+      "Aerogel"
+    ],
+    "disallowed_query_terms_in_answer": [
+      "Aerogel",
+      "Silica",
+      "Blanket",
+      "0.003"
+    ]
+  },
+  {
+    "case_id": "ENG_02_SUPERALLOY_HIGH_TEMP",
+    "description": "Visual diagram callout: query asks about high-temperature ductile yield strength with zero lexical overlap with 'Inconel 718'.",
+    "query": "Which alloy maintains ductile integrity under intense high-temperature oxidative environments?",
+    "document": "engineering_architecture_spec.pdf",
+    "target_page": 2,
+    "expected_answer_concepts": [
+      "Inconel 718",
+      "Nickel-Chromium Superalloy"
+    ],
+    "disallowed_query_terms_in_answer": [
+      "Inconel",
+      "718",
+      "Nickel",
+      "Chromium",
+      "Superalloy"
+    ]
+  },
+  {
+    "case_id": "ENG_03_FOUNDATION_SALINE_RESISTANCE",
+    "description": "Structural foundation text: query asks about groundwater saline protection with zero lexical overlap with 'Austenitic Stainless Steel 316L'.",
+    "query": "What protects the foundation base from saline groundwater corrosion?",
+    "document": "engineering_architecture_spec.pdf",
+    "target_page": 1,
+    "expected_answer_concepts": [
+      "Austenitic Stainless Steel 316L",
+      "Molybdenum passivation"
+    ],
+    "disallowed_query_terms_in_answer": [
+      "Austenitic",
+      "Stainless",
+      "Steel",
+      "316L",
+      "Molybdenum"
+    ]
+  },
+  {
+    "case_id": "ENG_04_SEISMIC_TENSION_MEMBER",
+    "description": "Structural foundation text: query asks about seismic bending and vibration resistance with zero lexical overlap with 'CFRP'.",
+    "query": "Which material counteracts severe earthquake ground shaking and bending strain in the concrete slab?",
+    "document": "engineering_architecture_spec.pdf",
+    "target_page": 1,
+    "expected_answer_concepts": [
+      "Prestressed Carbon-Fiber Reinforced Polymer",
+      "CFRP"
+    ],
+    "disallowed_query_terms_in_answer": [
+      "Carbon-Fiber",
+      "CFRP",
+      "Polymer",
+      "tendons"
+    ]
+  },
+  {
+    "case_id": "ENG_05_HYDROCARBON_SEAL_GASKET",
+    "description": "Piping manifold text: query asks about preventing toxic hydrocarbon leakage at pipe junctions with zero lexical overlap with 'FFKM Kalrez'.",
+    "query": "What element provides sealing protection against hazardous hydrocarbon emissions at pipe junctions?",
+    "document": "engineering_architecture_spec.pdf",
+    "target_page": 3,
+    "expected_answer_concepts": [
+      "Perfluoroelastomer",
+      "FFKM",
+      "Kalrez O-Rings"
+    ],
+    "disallowed_query_terms_in_answer": [
+      "Perfluoroelastomer",
+      "FFKM",
+      "Kalrez",
+      "O-Rings"
+    ]
+  }
+]

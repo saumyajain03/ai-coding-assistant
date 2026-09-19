@@ -1,0 +1,214 @@
+{
+  "total_cases": 5,
+  "total_passed": 5,
+  "pass_rate": "100.0%",
+  "results": [
+    {
+      "case_id": "ENG_01_THERMAL_AEROGEL",
+      "query": "What substance prevents extreme heat loss across the outer structural envelope?",
+      "verdict": "PASS",
+      "expected_concepts": [
+        "Aerogel Silica Matrix Blanket",
+        "Aerogel"
+      ],
+      "found_concepts": [
+        "Aerogel Silica Matrix Blanket",
+        "Aerogel"
+      ],
+      "top_score": 0.9997,
+      "latency_ms": 699.29,
+      "plan_intent": "semantic_lookup",
+      "selected_strategies": [
+        "vector"
+      ],
+      "retrieved_sources": [
+        "vector",
+        "lexical_bm25",
+        "lexical_bm25",
+        "ocr",
+        "visual"
+      ],
+      "citations": [
+        "engineering_architecture_spec.pdf:15-15",
+        "engineering_architecture_spec.pdf:L1-14",
+        "targeted_mixed.pdf:L6-9"
+      ],
+      "trace": [
+        "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+        "Vector search returned 5 items",
+        "Sufficiency Evaluation: False (Top candidate evidence from visual-heavy page 'engineering_architecture_spec.pdf:Page 2' is limited to text/caption; Visual RAG escalation required.)",
+        "Initiating Adaptive Escalation...",
+        "Escalation added 5 BM25 results",
+        "Escalation added OCR for mixed_document.pdf:Page 2",
+        "Escalation added OCR for scanned_text.pdf:Page 1",
+        "Escalation added OCR for scanned_text.pdf:Page 2",
+        "Escalation added Visual RAG for 1 region(s)",
+        "Final post-escalation fused results: 5"
+      ],
+      "top_snippet": "Figure 2.1: Thermal Barrier and Cryogenic Heat Exchanger Assembly Blueprint...."
+    },
+    {
+      "case_id": "ENG_02_SUPERALLOY_HIGH_TEMP",
+      "query": "Which alloy maintains ductile integrity under intense high-temperature oxidative environments?",
+      "verdict": "PASS",
+      "expected_concepts": [
+        "Inconel 718",
+        "Nickel-Chromium Superalloy"
+      ],
+      "found_concepts": [
+        "Inconel 718",
+        "Nickel-Chromium Superalloy"
+      ],
+      "top_score": 0.9997,
+      "latency_ms": 163.04,
+      "plan_intent": "semantic_lookup",
+      "selected_strategies": [
+        "vector"
+      ],
+      "retrieved_sources": [
+        "lexical_bm25",
+        "vector",
+        "ocr",
+        "visual",
+        "vector"
+      ],
+      "citations": [
+        "engineering_architecture_spec.pdf:L16-24",
+        "engineering_architecture_spec.pdf:1-14",
+        "mixed_document.pdf:Page 2 [OCR]"
+      ],
+      "trace": [
+        "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+        "Vector search returned 5 items",
+        "Sufficiency Evaluation: False (Top candidate evidence from visual-heavy page 'engineering_architecture_spec.pdf:Page 2' is limited to text/caption; Visual RAG escalation required.)",
+        "Initiating Adaptive Escalation...",
+        "Escalation added 4 BM25 results",
+        "Escalation added OCR for mixed_document.pdf:Page 2",
+        "Escalation added OCR for scanned_text.pdf:Page 1",
+        "Escalation added OCR for scanned_text.pdf:Page 2",
+        "Escalation added Visual RAG for 1 region(s)",
+        "Final post-escalation fused results: 5"
+      ],
+      "top_snippet": "3.0 FLUID CONDUITS AND HIGH-PRESSURE PIPING MANIFOLD\n3.1 Hydraulic Duct Metallurgy:\nConduits subject to rapid fluid surges are constructed from Titanium Grade 5 (Ti-6Al-4V) Ducts.\nThis aerospace-grade..."
+    },
+    {
+      "case_id": "ENG_03_FOUNDATION_SALINE_RESISTANCE",
+      "query": "What protects the foundation base from saline groundwater corrosion?",
+      "verdict": "PASS",
+      "expected_concepts": [
+        "Austenitic Stainless Steel 316L",
+        "Molybdenum passivation"
+      ],
+      "found_concepts": [
+        "Austenitic Stainless Steel 316L",
+        "Molybdenum passivation"
+      ],
+      "top_score": 0.9994,
+      "latency_ms": 46.25,
+      "plan_intent": "semantic_lookup",
+      "selected_strategies": [
+        "vector"
+      ],
+      "retrieved_sources": [
+        "vector",
+        "vector",
+        "vector",
+        "vector",
+        "vector"
+      ],
+      "citations": [
+        "engineering_architecture_spec.pdf:1-14",
+        "engineering_architecture_spec.pdf:16-24",
+        "normal_text.pdf:19-24"
+      ],
+      "trace": [
+        "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+        "Vector search returned 5 items",
+        "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
+      ],
+      "top_snippet": "ENGINEERING SPECIFICATION: INDUSTRIAL REINFORCEMENT & STRUCTURAL ANCHORAGE\nDocument Ref: ENG-SPEC-2026-REV4 | Substructure Geotechnical Division\n1.0 DEEP SUBSTRUCTURE GEOTECHNICAL BASE\n1.1 Base Column..."
+    },
+    {
+      "case_id": "ENG_04_SEISMIC_TENSION_MEMBER",
+      "query": "Which material counteracts severe earthquake ground shaking and bending strain in the concrete slab?",
+      "verdict": "PASS",
+      "expected_concepts": [
+        "Prestressed Carbon-Fiber Reinforced Polymer",
+        "CFRP"
+      ],
+      "found_concepts": [
+        "CFRP"
+      ],
+      "top_score": 0.9994,
+      "latency_ms": 47.94,
+      "plan_intent": "semantic_lookup",
+      "selected_strategies": [
+        "vector"
+      ],
+      "retrieved_sources": [
+        "vector",
+        "vector",
+        "vector",
+        "vector",
+        "vector"
+      ],
+      "citations": [
+        "engineering_architecture_spec.pdf:1-14",
+        "engineering_architecture_spec.pdf:16-24",
+        "targeted_mixed.pdf:6-9"
+      ],
+      "trace": [
+        "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+        "Vector search returned 5 items",
+        "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
+      ],
+      "top_snippet": "ENGINEERING SPECIFICATION: INDUSTRIAL REINFORCEMENT & STRUCTURAL ANCHORAGE\nDocument Ref: ENG-SPEC-2026-REV4 | Substructure Geotechnical Division\n1.0 DEEP SUBSTRUCTURE GEOTECHNICAL BASE\n1.1 Base Column..."
+    },
+    {
+      "case_id": "ENG_05_HYDROCARBON_SEAL_GASKET",
+      "query": "What element provides sealing protection against hazardous hydrocarbon emissions at pipe junctions?",
+      "verdict": "PASS",
+      "expected_concepts": [
+        "Perfluoroelastomer",
+        "FFKM",
+        "Kalrez O-Rings"
+      ],
+      "found_concepts": [
+        "Perfluoroelastomer",
+        "FFKM",
+        "Kalrez O-Rings"
+      ],
+      "top_score": 0.9997,
+      "latency_ms": 307.52,
+      "plan_intent": "semantic_lookup",
+      "selected_strategies": [
+        "vector"
+      ],
+      "retrieved_sources": [
+        "lexical_bm25",
+        "vector",
+        "ocr",
+        "visual",
+        "vector"
+      ],
+      "citations": [
+        "engineering_architecture_spec.pdf:L16-24",
+        "normal_text.pdf:19-24",
+        "mixed_document.pdf:Page 2 [OCR]"
+      ],
+      "trace": [
+        "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
+        "Vector search returned 5 items",
+        "Sufficiency Evaluation: False (Top candidate evidence from visual-heavy page 'engineering_architecture_spec.pdf:Page 2' is limited to text/caption; Visual RAG escalation required.)",
+        "Initiating Adaptive Escalation...",
+        "Escalation added 5 BM25 results",
+        "Escalation added OCR for mixed_document.pdf:Page 2",
+        "Escalation added OCR for scanned_text.pdf:Page 1",
+        "Escalation added OCR for scanned_text.pdf:Page 2",
+        "Escalation added Visual RAG for 1 region(s)",
+        "Final post-escalation fused results: 5"
+      ],
+      "top_snippet": "3.0 FLUID CONDUITS AND HIGH-PRESSURE PIPING MANIFOLD\n3.1 Hydraulic Duct Metallurgy:\nConduits subject to rapid fluid surges are constructed from Titanium Grade 5 (Ti-6Al-4V) Ducts.\nThis aerospace-grade..."
+    }
+  ]
+}

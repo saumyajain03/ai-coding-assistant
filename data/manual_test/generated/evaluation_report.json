@@ -13,22 +13,29 @@
     "retrieved_citations": [
       "normal_text.pdf:Page 1 (L1-6)",
       "mixed_document.pdf:Page 1 (L1-5)",
-      "security_spec.md:L1-4",
       "config/settings.json:L1-1",
-      "mixed_document.pdf:Page 3 (L7-11)"
+      "mixed_document.pdf:Page 2 (L1-1)",
+      "scanned_text.pdf:Page 1 (L1-1)"
     ],
     "retrieved_pages": [
       1,
       1,
-      3
+      2,
+      1
     ],
-    "latency_ms": 50.46,
+    "latency_ms": 334.69,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (Query begins with an explanatory/concept question starter.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: False (Target entity ['sentinelforge.'] not present in any retrieved content.)",
+      "Initiating Adaptive Escalation...",
+      "Escalation added 5 BM25 results",
+      "Escalation added OCR for mixed_document.pdf:Page 2",
+      "Escalation added OCR for scanned_text.pdf:Page 1",
+      "Escalation added OCR for scanned_text.pdf:Page 2",
+      "Final post-escalation fused results: 5"
     ]
   },
   {
@@ -48,19 +55,25 @@
       "tests/test_auth.py:L9-13",
       "tests/test_auth.py:L16-19",
       "app/main.py:L10-20",
-      "normal_text.pdf:Page 2 (L7-12)"
+      "mixed_document.pdf:Page 2 (L1-1)"
     ],
     "retrieved_pages": [
       2
     ],
-    "latency_ms": 44.19,
+    "latency_ms": 62.32,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: exact_symbol via ['lexical', 'vector'] (Query targets exact function/class/file symbol definition or location.)",
       "Vector search returned 5 items",
       "Lexical BM25 search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9997, count=5.)"
+      "Sufficiency Evaluation: False (None of the key query terms ['defined', 'codebase'] found in retrieved content.)",
+      "Initiating Adaptive Escalation...",
+      "Escalation added OCR for mixed_document.pdf:Page 2",
+      "Escalation added OCR for scanned_text.pdf:Page 1",
+      "Escalation added OCR for scanned_text.pdf:Page 2",
+      "Escalation added 1 graph edge(s) for 'authenticate_user'",
+      "Final post-escalation fused results: 5"
     ]
   },
   {
@@ -84,7 +97,7 @@
       "app/auth.py:L17-17"
     ],
     "retrieved_pages": [],
-    "latency_ms": 61.64,
+    "latency_ms": 46.72,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -92,7 +105,7 @@
       "Vector search returned 5 items",
       "Lexical BM25 search returned 5 items",
       "Graph traversal returned 1 relation edges",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9997, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -116,13 +129,13 @@
       "tests/test_auth.py:L5-5"
     ],
     "retrieved_pages": [],
-    "latency_ms": 2.31,
+    "latency_ms": 1.46,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: dependency_question via ['graph'] (Query explicitly asks for imports, callers, or dependency edges.)",
       "Graph traversal returned 9 relation edges",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -147,14 +160,14 @@
       "app/main.py:L10-20"
     ],
     "retrieved_pages": [],
-    "latency_ms": 51.04,
+    "latency_ms": 47.62,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: multi_hop_architecture via ['graph', 'vector'] (Query asks for end-to-end data/architectural flow across multiple components.)",
       "Vector search returned 5 items",
       "Graph traversal returned 4 relation edges",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -172,21 +185,21 @@
       "normal_text.pdf:Page 4 (L19-24)",
       "visual_architecture.pdf:Page 3 (L3-3)",
       "payment_guide.md:L4-6",
-      "config/settings.json:L1-4",
-      "mixed_document.pdf:Page 1 (L1-5)"
+      "targeted_visual_heavy.pdf:Page 1 (L1-1)",
+      "config/settings.json:L1-4"
     ],
     "retrieved_pages": [
       4,
       3,
       1
     ],
-    "latency_ms": 47.58,
+    "latency_ms": 44.11,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -202,25 +215,25 @@
       "scanned_text.pdf"
     ],
     "retrieved_citations": [
-      "mixed_document.pdf:Page 2 (L6-6)",
       "auth_docs.md:L1-3",
-      "normal_text.pdf:Page 2 (L7-12)",
-      "scanned_text.pdf:Page 1 (L1-1)"
+      "scanned_text.pdf:Page 1 (L1-1)",
+      "scanned_text.pdf:L1-1"
     ],
     "retrieved_pages": [
-      2,
-      2,
       1
     ],
-    "latency_ms": 48.51,
-    "verdict": "MANUAL REVIEW",
-    "notes": [
-      "Tesseract binary not installed on host machine. System gracefully fell back to text/BM25."
-    ],
+    "latency_ms": 136.48,
+    "verdict": "PASS",
+    "notes": [],
     "trace": [
-      "Initial Plan: scanned_text via ['ocr', 'vector'] (Query requests scanned content and repository contains 4 scanned page(s).)",
+      "Initial Plan: scanned_text via ['ocr', 'vector'] (All pages in target document 'scanned_text.pdf' are scanned pages; routing to OCR pipeline.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9997, count=4.)"
+      "Lazy OCR returned 3 page extraction(s)",
+      "Sufficiency Evaluation: False (Top retrieved result is a scanned page placeholder without extracted text; OCR/Visual escalation required.)",
+      "Initiating Adaptive Escalation...",
+      "Escalation added 5 BM25 results",
+      "Escalation added 3 graph edge(s) for 'scanned_text.pdf'",
+      "Final post-escalation fused results: 5"
     ]
   },
   {
@@ -236,17 +249,19 @@
     ],
     "retrieved_citations": [
       "visual_architecture.pdf:Page 1 (L1-1)",
+      "mixed_document.pdf:Page 2 (L1-1)",
       "visual_architecture.pdf:Page 2 (L2-2)",
-      "service_api.md:L1-2",
-      "visual_architecture.pdf:Page 3 (L3-3)",
-      "api_guide.md:L1-3"
+      "normal_text.pdf:Page 3 (L13-18)",
+      "scanned_text.pdf:Page 1 (L1-1)"
     ],
     "retrieved_pages": [
       1,
       2,
-      3
+      2,
+      3,
+      1
     ],
-    "latency_ms": 46.1,
+    "latency_ms": 86.54,
     "verdict": "MANUAL REVIEW",
     "notes": [
       "Visual RAG disabled by default for 512MB RAM constraint. System gracefully fell back to text/BM25 without faking embeddings."
@@ -254,7 +269,13 @@
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (Query asks about diagrams/charts, but Visual RAG is inactive or no visual pages exist; routing safely to text + BM25.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: False (Target entity ['visual_architecture.pdf.'] not present in any retrieved content.)",
+      "Initiating Adaptive Escalation...",
+      "Escalation added 5 BM25 results",
+      "Escalation added OCR for mixed_document.pdf:Page 2",
+      "Escalation added OCR for scanned_text.pdf:Page 1",
+      "Escalation added OCR for scanned_text.pdf:Page 2",
+      "Final post-escalation fused results: 5"
     ]
   },
   {
@@ -272,22 +293,22 @@
       "mixed_document.pdf:Page 3 (L7-11)",
       "visual_architecture.pdf:Page 1 (L1-1)",
       "payment_guide.md:L1-3",
-      "normal_text.pdf:Page 3 (L13-18)",
-      "mixed_document.pdf:Page 1 (L1-5)"
+      "targeted_visual_heavy.pdf:Page 1 (L1-1)",
+      "normal_text.pdf:Page 3 (L13-18)"
     ],
     "retrieved_pages": [
       3,
       1,
-      3,
-      1
+      1,
+      3
     ],
-    "latency_ms": 46.82,
+    "latency_ms": 70.17,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (Query begins with an explanatory/concept question starter.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -304,22 +325,24 @@
     "retrieved_citations": [
       "normal_text.pdf:Page 3 (L13-18)",
       "mixed_document.pdf:Page 4 (L12-12)",
+      "targeted_text_only.pdf:Page 1 (L1-5)",
       "mixed_document.pdf:Page 3 (L7-11)",
-      "config/settings.json:L1-5",
-      "config/settings.json:L1-4"
+      "targeted_text_only.pdf:Page 2 (L6-9)"
     ],
     "retrieved_pages": [
       3,
       4,
-      3
+      1,
+      3,
+      2
     ],
-    "latency_ms": 45.28,
+    "latency_ms": 81.52,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -336,21 +359,30 @@
     "retrieved_citations": [
       "security_doc.txt:L1-8",
       "normal_text.pdf:Page 5 (L25-30)",
-      "README.md:L1-10",
-      "app/auth.py:L11-40",
-      "mixed_document.pdf:Page 2 (L6-6)"
+      "mixed_document.pdf:Page 2 (L1-1)",
+      "scanned_text.pdf:Page 2 (L1-1)",
+      "README.md:L1-10"
     ],
     "retrieved_pages": [
       5,
+      2,
       2
     ],
-    "latency_ms": 45.33,
-    "verdict": "PASS",
-    "notes": [],
+    "latency_ms": 64.42,
+    "verdict": "FAIL",
+    "notes": [
+      "Expected BM25 lexical strategy, but router selected ['vector']."
+    ],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
       "Vector search returned 5 items",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: False (Target entity ['security_doc.txt.'] not present in any retrieved content.)",
+      "Initiating Adaptive Escalation...",
+      "Escalation added 5 BM25 results",
+      "Escalation added OCR for mixed_document.pdf:Page 2",
+      "Escalation added OCR for scanned_text.pdf:Page 2",
+      "Escalation added OCR for targeted_mixed.pdf:Page 2",
+      "Final post-escalation fused results: 5"
     ]
   },
   {
@@ -373,13 +405,13 @@
       "tests/test_auth.py:L6-6"
     ],
     "retrieved_pages": [],
-    "latency_ms": 1.61,
+    "latency_ms": 5.88,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: dependency_question via ['graph'] (Query explicitly asks for imports, callers, or dependency edges.)",
       "Graph traversal returned 6 relation edges",
-      "Sufficiency Evaluation: True (Evidence sufficient: top_score=0.9994, count=5.)"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   }
 ]

@@ -11,7 +11,7 @@
     "visual_invoked": false,
     "answer_correct": true,
     "fallback_worked": true,
-    "latency_ms": 343.74,
+    "latency_ms": 188.38,
     "verdict": "PASS",
     "notes": "Text-only page correctly bypassed heavy modalities and retrieved exact fact via vector search."
   },
@@ -38,7 +38,7 @@
     },
     "answer_correct": true,
     "fallback_worked": false,
-    "latency_ms": 371.17,
+    "latency_ms": 427.72,
     "verdict": "PASS",
     "notes": "Visual RAG extracted diagram region, computed pixel features, and retrieved bottleneck fact."
   },
@@ -55,7 +55,7 @@
     "visual_invoked": false,
     "answer_correct": true,
     "fallback_worked": false,
-    "latency_ms": 345.3,
+    "latency_ms": 284.7,
     "verdict": "PASS",
     "ocr_details": {
       "doc_id": "doc_4cf4d8e90746",
@@ -79,7 +79,7 @@
     "visual_invoked": false,
     "answer_correct": true,
     "fallback_worked": true,
-    "latency_ms": 55.7,
+    "latency_ms": 56.34,
     "verdict": "PASS"
   },
   {
@@ -93,7 +93,7 @@
     "visual_invoked": false,
     "answer_correct": true,
     "fallback_worked": false,
-    "latency_ms": 161.25,
+    "latency_ms": 162.8,
     "verdict": "PASS",
     "notes": "Adaptive escalation triggered OCR for scanned page 2, successfully retrieving the decommission cause."
   },
@@ -107,7 +107,7 @@
     "visual_active": false,
     "fake_embeddings": false,
     "fallback_worked": true,
-    "latency_ms": 53.28,
+    "latency_ms": 51.9,
     "verdict": "PASS",
     "notes": "Verified clean graceful fallback with zero fabricated visual embeddings."
   }

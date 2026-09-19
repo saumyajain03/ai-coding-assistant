@@ -10,7 +10,7 @@ This log tracks every phase of Project SentinelForge: files created, architectur
 |---|---|---|---|---|
 | **Phase 0** | Foundation, Config & Single-Command Gate | **COMPLETED** [x] | 5 Tests Passed | Pydantic Settings, path jail, Makefile, deterministic deps |
 | **Phase 1** | Model Context Protocol (MCP) Server | **COMPLETED** [x] | 8 Tests Passed (13 Total) | Official MCP SDK 2.x, 6 tools (+2 bonus), resource, prompt |
-| **Phase 2** | Privacy-First Local RAG, GraphRAG & Lazy Multimodal PDF | **COMPLETED** [x] | 59 Tests Passed (72 Total) | Canonical pages, lazy OCR, Visual RAG, tri-store, multi-signal router, 20 production E2E tests |
+| **Phase 2** | Privacy-First Local RAG, GraphRAG & Lazy Multimodal PDF | **COMPLETED** [x] | 70 Tests Passed (83 Total) | Canonical pages, lazy OCR, Semantic Visual RAG, tri-store, multi-signal router, 20 production E2E + 11 semantic visual tests |
 | **Phase 3** | Defensive Sandbox Engine | Pending [ ] | Targeted: 6+ Tests | Process isolation, setrlimit, dual runtime (Py+Node) |
 | **Phase 4** | 7-Stage Autonomous Agent Core | Pending [ ] | Targeted: 4+ Tests | 7-stage orchestrator, AST diffs, zero-cost LLM connector |
 | **Phase 5** | Web App & FastAPI Gateway | Pending [ ] | Targeted: 4+ Tests | OpenAPI docs, diff viewer UI, ephemeral bootstrap |
@@ -233,8 +233,42 @@ This log tracks every phase of Project SentinelForge: files created, architectur
 
 ---
 
+## Phase 2 Additive Improvement: Semantic Visual RAG with Subsystem Separation
+- **Status**: **COMPLETED** [x] (11 new automated tests in `test_visual_rag_semantic.py`, **83 total tests passing in ~3.7s**, 100% ruff clean)
+- **Objective**: Strengthen Visual RAG by cleanly separating OCR extraction, visual region extraction, and semantic visual understanding, enabling natural-language and paraphrased queries to match visual diagram elements without requiring literal keyword overlap, while strictly respecting the 512MB RAM ceiling.
+
+### 1. Architectural Subsystem Separation in `src/rag/visual_engine.py`
+1. **`DiagramTextExtractor` (Subsystem 1 - OCR / Literal Text Extraction)**:
+   - Dedicated solely to OCR text and label extraction from image pixels using local Tesseract.
+   - Multi-pass execution (raw image pass + contrast-enhanced binarization for colored diagram boxes).
+   - Preserves line breaks, deduplicates labels, and applies execution timeouts.
+2. **`VisualRegionExtractor` (Subsystem 2 - Spatial Region Detection & Pixel Features)**:
+   - Dedicated solely to spatial region detection, bounding box isolation, and pixel-level feature vectors.
+   - Computes a 16-bin normalized luminance histogram and perceptual SHA-256 image hash from raw pixels.
+3. **`SemanticVisualEngine` (Subsystem 3 - Semantic Visual Understanding)**:
+   - Interprets visual components, causal/directed flows (`A -> B -> C`), bottlenecks, and functional domain roles.
+   - Maps diagram components to functional domain ontology (anatomical/cardiac chambers, distributed bottlenecks, high-availability failover sequences, microservice pipelines).
+   - Implements `score_query(query, region, semantics)` to compute semantic similarity without requiring direct keyword overlap.
+   - Differentiates between literal keyword matches (`is_semantic_match=False`) and genuine conceptual matches (`is_semantic_match=True`).
+
+### 2. Router Enhancements in `src/rag/router.py`
+- Expanded `VISUAL_PATTERNS` to detect semantic structures: `which chamber`, `bottleneck`, `failover`, `promote standby`, `receives blood`, `write lock`, etc.
+- In `classify_query_intent`: searches `page_store.find_pages_by_modality("visual")` to capture both `VISUAL_HEAVY_PAGE` and `MIXED_PAGE`.
+- In `execute_adaptive_retrieval`: invokes `visual_engine.query_visual_regions(...)` with semantic scoring rather than static baseline scores.
+- In `evaluate_evidence_sufficiency`: honors genuine semantic visual evidence (`is_semantic_match=True` or `score >= 0.70`), preventing premature rejection when literal query terms are absent from diagram labels.
+
+### 3. Resource & Performance Profiling
+- **Peak RAM**: **9.27 MB** during visual processing and semantic extraction.
+- **Latency**:
+  - First run (uncached): ~718 ms (full Tesseract + pixel histogram + semantic analysis).
+  - Second run (cached): **0.08 ms** (sub-millisecond cache hit).
+- **Startup Overhead**: 0 MB (no large visual models loaded at startup).
+
+---
+
 ## Phase 3 Log: Defensive Sandbox Engine (Next)
 - **Goal**: Implement isolated execution for Python and Node.js/TypeScript workflows, enforce process limits (`RLIMIT_AS`, `RLIMIT_NPROC`, buffer caps), and test adversarial containment (fork bombs, memory exhaustion, traversal attacks).
+
 
 
 
