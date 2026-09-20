@@ -243,3 +243,26 @@ User Task Objective
   - Emits status: `WAITING_FOR_HUMAN_APPROVAL` with `request_id` and canonical `action_hash`.
   - Records structured `AGENT_LOOP_COMPLETED` event in the audit trail.
 ```
+
+---
+
+## 6. Phase 5 React Interactive UI Architecture
+
+The React frontend (`src/web/`) connects the operator to the 7-stage autonomous agent execution loop using an aesthetic inspired by `superbuilt.ai`:
+
+1. **Atmospheric Dark Visual Layer**:
+   - Deep pitch black base (`#000000`) with ambient radial cyan/cobalt/emerald blur orbs.
+   - Frosted glassmorphism floating panels (`backdrop-blur-2xl`, `border-white/10`).
+   - Clean modern typography with `Plus Jakarta Sans` and `JetBrains Mono`.
+
+2. **Core Component Flow**:
+   - **Main Agent Workspace (`App.tsx`)**: Input hero with prompt input bar, real-time stage status, and multi-tab layout.
+   - **7-Stage Visual Stepper (`StageStepper.tsx`)**: Displays discrete progression across Analysis, Plan, RAG, Patch, Approval, Apply, Test, Critique, and Report.
+   - **Unified Diff Viewer (`DiffViewer.tsx`)**: Side-by-side / unified diff viewer with addition/deletion line counters, AST syntax validation indicator, and copy actions.
+   - **Human Authorization Gate Modal (`ApprovalModal.tsx`)**: Prominent modal halting disk mutation pending operator cryptographic token generation.
+   - **Isolated Sandbox Terminal (`SandboxTerminal.tsx`)**: Collapsible dark terminal showing real-time command output, exit codes, and durations.
+   - **Context & Citations Panel (`CitationsPanel.tsx`)**: Displays RAG-retrieved workspace code chunks, file metadata, and security verdicts.
+   - **Structured Audit Trail (`AuditTimeline.tsx`)**: Real-time append-only timeline of all security events with SHA-256 action hashes.
+   - **Execution Summary & Critique View (`FinalReportView.tsx`)**: Formats empirical test verdicts, risk evaluations, and completion reports.
+   - **Service Abstraction (`services/api.ts`)**: Clean service layer designed for easy transition to real FastAPI endpoints.
+
