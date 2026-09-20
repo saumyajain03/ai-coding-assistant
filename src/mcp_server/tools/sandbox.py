@@ -54,7 +54,7 @@ def run_sandbox_command_tool(
         secrets=secrets,
     )
 
-    if res.get("status") == "WAITING_FOR_HUMAN_APPROVAL":
+    if res.get("status") in {"WAITING_FOR_HUMAN_APPROVAL", "blocked", "APPROVAL_INVALID"}:
         return res
 
     status = "success" if res.get("passed") else ("timeout" if res.get("timed_out") else "failed")

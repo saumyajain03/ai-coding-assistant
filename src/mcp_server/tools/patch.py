@@ -161,6 +161,8 @@ def propose_patch_tool(
         "target_file": str(rel_name),
         "proposed_content": proposed_content,
         "rationale": rationale,
+        "lines_added": lines_added,
+        "lines_removed": lines_removed,
         "request_id": proposal.request_id,
         "action_hash": proposal.action_hash,
         "applied": False,
@@ -285,8 +287,24 @@ def apply_patch_tool(
     )
 
     test_result = None
+    tests_passed = True
     if test_command:
         test_result = execute_sandboxed_command(test_command)
+        tests_passed = bool(test_result.get("passed", False))
+
+    final_report = {
+        "patch_id": patch_id,
+        "target_file": target_file,
+        "applied": True,
+        "lines_added": patch_entry.get("lines_added", 0),
+        "lines_removed": patch_entry.get("lines_removed", 0),
+        "test_command": test_command or None,
+        "tests_passed": tests_passed if test_command else None,
+        "verification_summary": (
+            f"Patch '{patch_id}' applied successfully. "
+            + (f"Verification test '{test_command}' {'PASSED' if tests_passed else 'FAILED'}." if test_command else "No automated tests requested.")
+        ),
+    }
 
     return {
         "status": "APPLIED",
@@ -294,5 +312,6 @@ def apply_patch_tool(
         "target_file": target_file,
         "applied": True,
         "test_result": test_result,
+        "final_report": final_report,
         "message": f"Patch '{patch_id}' successfully applied to '{target_file}'.",
     }

@@ -11,8 +11,8 @@ This log tracks every phase of Project SentinelForge: files created, architectur
 | **Phase 0** | Foundation, Config & Single-Command Gate | **COMPLETED** [x] | 5 Tests Passed | Pydantic Settings, path jail, Makefile, deterministic deps |
 | **Phase 1** | Model Context Protocol (MCP) Server | **COMPLETED** [x] | 8 Tests Passed (13 Total) | Official MCP SDK 2.x, 6 tools (+2 bonus), resource, prompt |
 | **Phase 2** | Privacy-First Local RAG, GraphRAG & Lazy Multimodal PDF | **COMPLETED** [x] | 70 Tests Passed (83 Total) | Canonical pages, lazy OCR, Semantic Visual RAG, tri-store, multi-signal router, 20 production E2E + 11 semantic visual tests |
-| **Phase 3** | Defensive Sandbox Engine | Pending [ ] | Targeted: 6+ Tests | Process isolation, setrlimit, dual runtime (Py+Node) |
-| **Phase 4** | 7-Stage Autonomous Agent Core | Pending [ ] | Targeted: 4+ Tests | 7-stage orchestrator, AST diffs, zero-cost LLM connector |
+| **Phase 3** | Defensive Sandbox Engine | **COMPLETED** [x] | 17 Tests Passed (100 Total) | Process isolation, setrlimit, dual runtime (Py+Node), symlink/path jail, hard timeout |
+| **Phase 4** | 7-Stage Autonomous Agent Core & Security Model | **COMPLETED** [x] | 28 Tests Passed (128 Total) | 7-stage orchestrator, AST diffs, zero-cost LLM connector (Ollama/Groq/HF/Mock), action-hash approval tokens, secret redaction |
 | **Phase 5** | Web App & FastAPI Gateway | Pending [ ] | Targeted: 4+ Tests | OpenAPI docs, diff viewer UI, ephemeral bootstrap |
 | **Phase 6** | Adversarial Hardening & Auditing | Pending [ ] | Targeted: 6+ Tests | 15+ injection attack suite, traversal jail tests |
 | **Phase 7** | Evaluation & Benchmark Suite | Pending [ ] | Targeted: 8+ Qs Eval | Precision@k, Recall@k, MRR retrieval metrics |

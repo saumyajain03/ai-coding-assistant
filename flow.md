@@ -197,3 +197,49 @@ User Query (e.g. "what does page 2 show in invoice.pdf" or "where is OrderProces
 4. **Sandbox dry-run**: The candidate changes are tested in an isolated test environment without modifying the main branch.
 5. User reviews the unified diff in the UI $\rightarrow$ clicks **[Approve]** or **[Reject]**.
 6. Only upon explicit **Approve** does the system atomic-write the patch to disk.
+
+---
+
+## 5. Phase 4 7-Stage Autonomous Agent Core Flow
+
+The Agent Core orchestrates code generation, debugging, and verification through a sequential, feedback-driven pipeline connecting to existing MCP tools and security invariants:
+
+```
+User Task Objective
+       │
+       ▼
+[Stage 1: Task Analysis]
+  - Parses requirements, affected modules, edge cases, and acceptance criteria.
+       │
+       ▼
+[Stage 2: Plan Generation]
+  - Formulates discrete, test-driven implementation steps and verification commands.
+       │
+       ▼
+[Stage 3: Context Retrieval via MCP]
+  - Invokes `retrieve_context` MCP tool to obtain line-level citations from vector, BM25, & knowledge graph.
+       │
+       ▼
+[Stage 4: Patch Proposal via DiffGenerator & MCP]
+  - Synthesizes updated file content.
+  - DiffGenerator parses AST (`ast.parse`) for syntax errors.
+  - Calls `propose_patch` MCP tool $\rightarrow$ registers `ActionProposal` in ApprovalManager.
+  - Disk file remains untouched (`PENDING_APPROVAL`).
+       │
+       ▼
+[Stage 5: Sandbox Execution via MCP]
+  - Invokes `run_sandbox_command` MCP tool to run the test suite (`pytest`, `unittest`, `node`).
+  - Enforces `setrlimit` CPU/memory limits, path jail, and output truncation.
+       │
+       ▼
+[Stage 6: Self-Critique & Risk Scoring]
+  - Inspects test stdout, stderr, exit code, and regressions.
+  - Assesses risk score (1–10) and formulates recommendations.
+  - If tests fail, preserves truthful error details rather than claiming success.
+       │
+       ▼
+[Stage 7: Final Report & Unified Diff]
+  - Assembles structured Markdown report (objective, citations, diff, test results, critique).
+  - Emits status: `WAITING_FOR_HUMAN_APPROVAL` with `request_id` and canonical `action_hash`.
+  - Records structured `AGENT_LOOP_COMPLETED` event in the audit trail.
+```

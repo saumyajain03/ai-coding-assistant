@@ -244,11 +244,19 @@ def test_09_patch_applies_after_approval():
     approval_mgr = get_approval_manager()
     token = approval_mgr.submit_approval(request_id=req_id, action_hash=act_hash, approved=True)
 
-    # Apply with approval
-    auth_res = apply_patch_tool(patch_id=patch_id, approval_token=token.model_dump())
+    # Apply with approval and automated test verification
+    auth_res = apply_patch_tool(
+        patch_id=patch_id,
+        approval_token=token.model_dump(),
+        test_command="python -c \"import src_patch_test; assert src_patch_test.approved_function() == 100\"",
+    )
     assert auth_res["status"] == "APPLIED"
     assert target.exists() is True
     assert "approved_function" in target.read_text(encoding="utf-8")
+    assert "final_report" in auth_res
+    assert auth_res["final_report"]["applied"] is True
+    assert auth_res["final_report"]["tests_passed"] is True
+    assert "PASSED" in auth_res["final_report"]["verification_summary"]
 
     # Cleanup
     if target.exists():
