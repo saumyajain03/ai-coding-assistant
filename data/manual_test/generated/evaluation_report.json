@@ -13,9 +13,9 @@
     "retrieved_citations": [
       "normal_text.pdf:Page 1 (L1-6)",
       "mixed_document.pdf:Page 1 (L1-5)",
-      "config/settings.json:L1-1",
       "mixed_document.pdf:Page 2 (L1-1)",
-      "scanned_text.pdf:Page 1 (L1-1)"
+      "scanned_text.pdf:Page 1 (L1-1)",
+      "docs/api_specification.md:L1-2"
     ],
     "retrieved_pages": [
       1,
@@ -23,7 +23,7 @@
       2,
       1
     ],
-    "latency_ms": 334.69,
+    "latency_ms": 75.46,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -60,7 +60,7 @@
     "retrieved_pages": [
       2
     ],
-    "latency_ms": 62.32,
+    "latency_ms": 51.89,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -97,7 +97,7 @@
       "app/auth.py:L17-17"
     ],
     "retrieved_pages": [],
-    "latency_ms": 46.72,
+    "latency_ms": 54.58,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -129,7 +129,7 @@
       "tests/test_auth.py:L5-5"
     ],
     "retrieved_pages": [],
-    "latency_ms": 1.46,
+    "latency_ms": 1.53,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -160,7 +160,7 @@
       "app/main.py:L10-20"
     ],
     "retrieved_pages": [],
-    "latency_ms": 47.62,
+    "latency_ms": 48.0,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -193,7 +193,7 @@
       3,
       1
     ],
-    "latency_ms": 44.11,
+    "latency_ms": 54.16,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -215,25 +215,25 @@
       "scanned_text.pdf"
     ],
     "retrieved_citations": [
-      "auth_docs.md:L1-3",
+      "docs/api_specification.md:L3-7",
       "scanned_text.pdf:Page 1 (L1-1)",
-      "scanned_text.pdf:L1-1"
+      "auth_docs.md:L1-3",
+      "scanned_text.pdf:Page 2 (L1-1)",
+      "normal_text.pdf:Page 2 (L7-12)"
     ],
     "retrieved_pages": [
-      1
+      1,
+      2,
+      2
     ],
-    "latency_ms": 136.48,
+    "latency_ms": 189.02,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: scanned_text via ['ocr', 'vector'] (All pages in target document 'scanned_text.pdf' are scanned pages; routing to OCR pipeline.)",
       "Vector search returned 5 items",
       "Lazy OCR returned 3 page extraction(s)",
-      "Sufficiency Evaluation: False (Top retrieved result is a scanned page placeholder without extracted text; OCR/Visual escalation required.)",
-      "Initiating Adaptive Escalation...",
-      "Escalation added 5 BM25 results",
-      "Escalation added 3 graph edge(s) for 'scanned_text.pdf'",
-      "Final post-escalation fused results: 5"
+      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
     ]
   },
   {
@@ -261,7 +261,7 @@
       3,
       1
     ],
-    "latency_ms": 86.54,
+    "latency_ms": 58.58,
     "verdict": "MANUAL REVIEW",
     "notes": [
       "Visual RAG disabled by default for 512MB RAM constraint. System gracefully fell back to text/BM25 without faking embeddings."
@@ -294,15 +294,14 @@
       "visual_architecture.pdf:Page 1 (L1-1)",
       "payment_guide.md:L1-3",
       "targeted_visual_heavy.pdf:Page 1 (L1-1)",
-      "normal_text.pdf:Page 3 (L13-18)"
+      "docs/api_specification.md:L14-16"
     ],
     "retrieved_pages": [
       3,
       1,
-      1,
-      3
+      1
     ],
-    "latency_ms": 70.17,
+    "latency_ms": 54.38,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -324,19 +323,17 @@
     ],
     "retrieved_citations": [
       "normal_text.pdf:Page 3 (L13-18)",
+      "docs/api_specification.md:L14-16",
       "mixed_document.pdf:Page 4 (L12-12)",
-      "targeted_text_only.pdf:Page 1 (L1-5)",
-      "mixed_document.pdf:Page 3 (L7-11)",
-      "targeted_text_only.pdf:Page 2 (L6-9)"
+      "operational_guide.txt:L1-11",
+      "targeted_text_only.pdf:Page 1 (L1-5)"
     ],
     "retrieved_pages": [
       3,
       4,
-      1,
-      3,
-      2
+      1
     ],
-    "latency_ms": 81.52,
+    "latency_ms": 51.96,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -368,7 +365,7 @@
       2,
       2
     ],
-    "latency_ms": 64.42,
+    "latency_ms": 53.14,
     "verdict": "FAIL",
     "notes": [
       "Expected BM25 lexical strategy, but router selected ['vector']."
@@ -405,7 +402,7 @@
       "tests/test_auth.py:L6-6"
     ],
     "retrieved_pages": [],
-    "latency_ms": 5.88,
+    "latency_ms": 1.72,
     "verdict": "PASS",
     "notes": [],
     "trace": [

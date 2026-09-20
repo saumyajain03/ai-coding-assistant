@@ -1,0 +1,11 @@
+SENTINELFORGE OPERATIONAL RUNBOOK AND TELEMETRY CONFIGURATION
+
+SECTION 1: SYSTEM MONITORING AND HEALTH CHECK
+The health check endpoint is exposed on localhost at port 9090 via /healthz.
+A status code of 200 confirms that ChromaDB, SQLite, and the BM25 index are responsive.
+If memory usage exceeds 240MB, the system emits an early MEMORY_PRESSURE warning.
+
+SECTION 2: PROCESS TERMINATION AND RESTART POLICY
+Background worker tasks must terminate within 30 seconds of receiving a SIGTERM signal.
+If ungraceful shutdown occurs, stale lockfiles in data/scratch/locks must be purged manually.
+Diagnostic dumps are automatically written to data/scratch/telemetry_crash.log.

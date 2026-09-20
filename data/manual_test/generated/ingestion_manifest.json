@@ -9,7 +9,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 49.95
+    "duration_ms": 123.82
   },
   {
     "document_id": "doc_4ad8352139f2",
@@ -21,7 +21,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.28
+    "duration_ms": 1.51
   },
   {
     "document_id": "doc_1f8ece98e216",
@@ -33,7 +33,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.05
+    "duration_ms": 1.31
   },
   {
     "document_id": "doc_0e0cec099aa1",
@@ -45,7 +45,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.14
+    "duration_ms": 1.27
   },
   {
     "document_id": "doc_ca7e81df5798",
@@ -57,7 +57,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.06
+    "duration_ms": 1.31
   },
   {
     "document_id": "doc_4cf4d8e90746",
@@ -69,7 +69,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.04
+    "duration_ms": 1.24
   },
   {
     "document_id": "doc_7cb0004fd17f",
@@ -81,7 +81,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 0.95
+    "duration_ms": 1.21
   },
   {
     "document_id": "doc_0f9664420a94",
@@ -93,7 +93,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.04
+    "duration_ms": 1.25
   },
   {
     "document_id": "doc_aec743d99d25",
@@ -105,7 +105,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.07
+    "duration_ms": 1.35
   },
   {
     "document_id": "doc_9962136af997",
@@ -117,7 +117,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.01
+    "duration_ms": 1.32
   },
   {
     "document_id": "doc_68e6bc9f5868",
@@ -129,7 +129,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.02
+    "duration_ms": 1.23
   },
   {
     "document_id": "doc_07dde1f3d2f2",
@@ -141,7 +141,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 0.95
+    "duration_ms": 1.12
   },
   {
     "document_id": "doc_2ec5f66239fa",
@@ -153,7 +153,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.0
+    "duration_ms": 1.45
   },
   {
     "document_id": "doc_161cd237c458",
@@ -165,7 +165,19 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.04
+    "duration_ms": 1.25
+  },
+  {
+    "document_id": "doc_f203886615ee",
+    "filename": "app/session_types.ts",
+    "file_type": ".ts",
+    "chunk_count": 5,
+    "sha256_hash": "f203886615ee8fcedd80948ebac95eed28750947391bf0237fceedb391b28a8d",
+    "is_duplicate": true,
+    "status": "already_indexed",
+    "graph_nodes_count": 0,
+    "graph_edges_count": 0,
+    "duration_ms": 1.19
   },
   {
     "document_id": "doc_267b7f46516d",
@@ -177,7 +189,19 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.76
+    "duration_ms": 1.08
+  },
+  {
+    "document_id": "doc_3e43470763df",
+    "filename": "docs/api_specification.md",
+    "file_type": ".md",
+    "chunk_count": 4,
+    "sha256_hash": "3e43470763dfff337fba7cc00547a4978109f6519d64aef84137697026d70aad",
+    "is_duplicate": true,
+    "status": "already_indexed",
+    "graph_nodes_count": 0,
+    "graph_edges_count": 0,
+    "duration_ms": 1.14
   },
   {
     "document_id": "doc_0e1ea8f1bb72",
@@ -189,7 +213,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 2.36
+    "duration_ms": 1.35
   },
   {
     "document_id": "doc_713e5fab2471",
@@ -201,7 +225,19 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.91
+    "duration_ms": 1.1
+  },
+  {
+    "document_id": "doc_090940b5121d",
+    "filename": "web/auth_client.js",
+    "file_type": ".js",
+    "chunk_count": 3,
+    "sha256_hash": "090940b5121d3581ed75868bd65b83e9acc15cad658d10527cb77259a09b49d0",
+    "is_duplicate": true,
+    "status": "already_indexed",
+    "graph_nodes_count": 0,
+    "graph_edges_count": 0,
+    "duration_ms": 1.18
   },
   {
     "document_id": "doc_34a842a671c8",
@@ -213,6 +249,6 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.6
+    "duration_ms": 1.05
   }
 ]

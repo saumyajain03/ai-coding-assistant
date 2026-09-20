@@ -62,7 +62,7 @@ def run_ingestion_phase() -> dict[str, Any]:
 
     # 2. Discover Code Repo Files
     code_files: list[Path] = []
-    for ext in ("*.py", "*.json", "*.md"):
+    for ext in ("*.py", "*.json", "*.md", "*.js", "*.ts"):
         code_files.extend(CODE_DIR.rglob(ext))
     code_files = sorted(code_files)
     print(f"\nFound {len(code_files)} code repo files in {CODE_DIR.relative_to(PROJECT_ROOT)}")

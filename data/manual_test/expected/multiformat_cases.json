@@ -1,0 +1,183 @@
+[
+  {
+    "id": "case_01_markdown_semantic",
+    "format": "Markdown (.md)",
+    "query": "What is the ingress port and mTLS termination requirement for the API Gateway?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "docs/api_specification.md",
+      "api_specification.md"
+    ],
+    "expected_content_tokens": [
+      "8443",
+      "mTLS termination"
+    ],
+    "reason": "Tests Markdown parser section extraction and semantic dense retrieval over structured heading blocks."
+  },
+  {
+    "id": "case_02_markdown_heading_lookup",
+    "format": "Markdown (.md)",
+    "query": "What does the API specification say about Database Persistence Layer and write-ahead logging?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "docs/api_specification.md",
+      "api_specification.md"
+    ],
+    "expected_content_tokens": [
+      "SQLite",
+      "write-ahead logging",
+      "WAL"
+    ],
+    "reason": "Tests Markdown section title retention and retrieval of paragraph content under ## Database Persistence Layer."
+  },
+  {
+    "id": "case_03_text_operational_semantic",
+    "format": "Plain Text (.txt)",
+    "query": "What is the health check endpoint port and path for system monitoring in operational_guide.txt?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "operational_guide.txt"
+    ],
+    "expected_content_tokens": [
+      "9090",
+      "/healthz"
+    ],
+    "reason": "Tests Plain Text parser chunking and retrieval of operational port and endpoint values."
+  },
+  {
+    "id": "case_04_text_exact_diagnostic",
+    "format": "Plain Text (.txt)",
+    "query": "Where are diagnostic crash dumps written when ungraceful shutdown occurs?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "operational_guide.txt"
+    ],
+    "expected_content_tokens": [
+      "telemetry_crash.log",
+      "SIGTERM"
+    ],
+    "reason": "Tests exact diagnostic filename matching and recovery from plain text runbooks."
+  },
+  {
+    "id": "case_05_json_config_lookup",
+    "format": "JSON (.json)",
+    "query": "What is the token_algorithm and token_ttl_seconds in settings.json?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "config/settings.json",
+      "settings.json"
+    ],
+    "expected_content_tokens": [
+      "HS256",
+      "3600"
+    ],
+    "reason": "Tests JSON parser structural object chunking and key-value retrieval for auth configuration."
+  },
+  {
+    "id": "case_06_json_db_pool",
+    "format": "JSON (.json)",
+    "query": "What database engine and connection pool size are configured in settings.json?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "config/settings.json",
+      "settings.json"
+    ],
+    "expected_content_tokens": [
+      "sqlite3",
+      "5"
+    ],
+    "reason": "Tests JSON key segmentation and accurate recovery of integer/string configuration attributes."
+  },
+  {
+    "id": "case_07_python_ast_exact_symbol",
+    "format": "Python (.py)",
+    "query": "Where is authenticate_user defined in the codebase?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "app/auth.py",
+      "auth.py"
+    ],
+    "expected_content_tokens": [
+      "def authenticate_user",
+      "AuthService"
+    ],
+    "reason": "Tests Python AST parsing for exact method definition line ranges and symbol indexing."
+  },
+  {
+    "id": "case_08_python_dependency_graph",
+    "format": "Python (.py)",
+    "query": "What does app/auth.py import and depend on?",
+    "expected_retrieval_mode": "graph",
+    "expected_sources": [
+      "app/auth.py",
+      "app/database.py",
+      "app/cache.py"
+    ],
+    "expected_content_tokens": [
+      "database",
+      "cache"
+    ],
+    "reason": "Tests Knowledge Graph module dependency resolution for Python import hierarchies."
+  },
+  {
+    "id": "case_09_javascript_method_symbol",
+    "format": "JavaScript (.js)",
+    "query": "Where is getAuthorizationHeader defined in the web client?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "web/auth_client.js",
+      "auth_client.js"
+    ],
+    "expected_content_tokens": [
+      "getAuthorizationHeader",
+      "Bearer"
+    ],
+    "reason": "Tests JavaScript structural parsing for method extraction, class scope, and lexical retrieval."
+  },
+  {
+    "id": "case_10_javascript_login_semantic",
+    "format": "JavaScript (.js)",
+    "query": "How does the client authenticate with loginWithCredentials in JavaScript?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "web/auth_client.js",
+      "auth_client.js"
+    ],
+    "expected_content_tokens": [
+      "/api/v1/auth/login",
+      "accessToken"
+    ],
+    "reason": "Tests JavaScript function body semantic dense retrieval and parameter understanding."
+  },
+  {
+    "id": "case_11_typescript_interface_symbol",
+    "format": "TypeScript (.ts)",
+    "query": "Where is the UserSessionPayload interface defined in TypeScript?",
+    "expected_retrieval_mode": "lexical",
+    "expected_sources": [
+      "app/session_types.ts",
+      "session_types.ts"
+    ],
+    "expected_content_tokens": [
+      "interface UserSessionPayload",
+      "sessionId"
+    ],
+    "reason": "Tests TypeScript structural parser interface detection and symbol indexing."
+  },
+  {
+    "id": "case_12_typescript_enum_and_generics",
+    "format": "TypeScript (.ts)",
+    "query": "What are the states in SessionState and how does SessionRegistry check expiration in session_types.ts?",
+    "expected_retrieval_mode": "vector",
+    "expected_sources": [
+      "app/session_types.ts",
+      "session_types.ts"
+    ],
+    "expected_content_tokens": [
+      "SessionState",
+      "ACTIVE",
+      "isSessionExpired"
+    ],
+    "reason": "Tests TypeScript parser handling of enums, generic class declarations, and typed method signatures."
+  }
+]

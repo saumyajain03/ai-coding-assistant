@@ -90,6 +90,7 @@ class Settings(BaseSettings):
 
     # --- System Sandbox Resource Limits ---
     SANDBOX_TIMEOUT_SEC: int = 5
+    SANDBOX_MAX_TIMEOUT_SEC: int = 300
     SANDBOX_MEMORY_LIMIT_MB: int = 200
     SANDBOX_MAX_MEMORY_MB: int = 200
     SANDBOX_MAX_NPROC: int = 10

@@ -168,6 +168,7 @@ def test_06_mixed_pdf_routes_to_visual_processing_when_required():
     with patch.object(settings, "ENABLE_VISUAL_RAG", True):
         v_engine = get_visual_engine()
         with patch.object(v_engine, "_model_loaded", True):
+            v_engine.clear_cache()
             query = "How does the failover promote standby backup node on Page 3 in targeted_mixed.pdf?"
             plan = build_retrieval_plan(query)
             assert plan.intent == RetrievalIntent.VISUAL_QUESTION

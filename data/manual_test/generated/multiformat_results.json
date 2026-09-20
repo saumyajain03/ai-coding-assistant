@@ -1,0 +1,440 @@
+{
+  "timestamp": "2026-09-19T12:51:48Z",
+  "total_duration_sec": 1.27,
+  "parsing_validation": [
+    {
+      "format": "Markdown (.md)",
+      "filename": "api_specification.md",
+      "sections_count": 4,
+      "chunk_types": [
+        "markdown_section"
+      ],
+      "duration_ms": 0.071,
+      "status": "PASS"
+    },
+    {
+      "format": "Plain Text (.txt)",
+      "filename": "operational_guide.txt",
+      "sections_count": 1,
+      "chunk_types": [
+        "text"
+      ],
+      "duration_ms": 0.011,
+      "status": "PASS"
+    },
+    {
+      "format": "JSON (.json)",
+      "filename": "settings.json",
+      "sections_count": 5,
+      "chunk_types": [
+        "json_object"
+      ],
+      "duration_ms": 0.05,
+      "status": "PASS"
+    },
+    {
+      "format": "Python (.py)",
+      "filename": "auth.py",
+      "sections_count": 1,
+      "chunk_types": [
+        "code_class"
+      ],
+      "duration_ms": 0.146,
+      "status": "PASS"
+    },
+    {
+      "format": "JavaScript (.js)",
+      "filename": "auth_client.js",
+      "sections_count": 3,
+      "chunk_types": [
+        "code_block"
+      ],
+      "duration_ms": 0.151,
+      "status": "PASS"
+    },
+    {
+      "format": "TypeScript (.ts)",
+      "filename": "session_types.ts",
+      "sections_count": 5,
+      "chunk_types": [
+        "code_block",
+        "code_interface"
+      ],
+      "duration_ms": 0.218,
+      "status": "PASS"
+    }
+  ],
+  "ingestion_manifest": [
+    {
+      "document_id": "doc_3e43470763df",
+      "filename": "docs/api_specification.md",
+      "file_type": ".md",
+      "chunk_count": 4,
+      "sha256_hash": "3e43470763dfff337fba7cc00547a4978109f6519d64aef84137697026d70aad",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 147.39
+    },
+    {
+      "document_id": "doc_9962136af997",
+      "filename": "README.md",
+      "file_type": ".md",
+      "chunk_count": 1,
+      "sha256_hash": "9962136af9973691a21488459097f1cb7600ba1ec6b87e4f27d9f5f6191c844c",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.35
+    },
+    {
+      "document_id": "doc_198459b670e0",
+      "filename": "operational_guide.txt",
+      "file_type": ".txt",
+      "chunk_count": 1,
+      "sha256_hash": "198459b670e0b8e56ac8c96d873bc4e570df49a16346b64ab52e9e78a05f9b81",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.12
+    },
+    {
+      "document_id": "doc_34a842a671c8",
+      "filename": "security_doc.txt",
+      "file_type": ".txt",
+      "chunk_count": 1,
+      "sha256_hash": "34a842a671c800ca0fb6f30fc8d0276f5ca274a5ccc6965ede0093314bdeb0ba",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.18
+    },
+    {
+      "document_id": "doc_267b7f46516d",
+      "filename": "config/settings.json",
+      "file_type": ".json",
+      "chunk_count": 5,
+      "sha256_hash": "267b7f46516d48efc0acad4fe5945191df5f8806118b39730e3a9cb51cf36590",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.06
+    },
+    {
+      "document_id": "doc_68e6bc9f5868",
+      "filename": "app/auth.py",
+      "file_type": ".py",
+      "chunk_count": 1,
+      "sha256_hash": "68e6bc9f58687dace522ccaa6abbd710975de68a6bdbcdd5ec82653eda6711a4",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.02
+    },
+    {
+      "document_id": "doc_2ec5f66239fa",
+      "filename": "app/database.py",
+      "file_type": ".py",
+      "chunk_count": 1,
+      "sha256_hash": "2ec5f66239fa37cfe0749906849e624be6a63fd0242f705afe6e7de88ed5dc26",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.18
+    },
+    {
+      "document_id": "doc_07dde1f3d2f2",
+      "filename": "app/cache.py",
+      "file_type": ".py",
+      "chunk_count": 1,
+      "sha256_hash": "07dde1f3d2f27966997e5df3122ea8b5fc4028b05f8f7777a5170ef356cb0238",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.05
+    },
+    {
+      "document_id": "doc_161cd237c458",
+      "filename": "app/main.py",
+      "file_type": ".py",
+      "chunk_count": 1,
+      "sha256_hash": "161cd237c45889ae9485c7d36665b3740342efe8b3abd3b22ee8bc7672f70379",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.15
+    },
+    {
+      "document_id": "doc_090940b5121d",
+      "filename": "web/auth_client.js",
+      "file_type": ".js",
+      "chunk_count": 3,
+      "sha256_hash": "090940b5121d3581ed75868bd65b83e9acc15cad658d10527cb77259a09b49d0",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.05
+    },
+    {
+      "document_id": "doc_f203886615ee",
+      "filename": "app/session_types.ts",
+      "file_type": ".ts",
+      "chunk_count": 5,
+      "sha256_hash": "f203886615ee8fcedd80948ebac95eed28750947391bf0237fceedb391b28a8d",
+      "is_duplicate": true,
+      "status": "already_indexed",
+      "graph_nodes_count": 0,
+      "graph_edges_count": 0,
+      "duration_ms": 1.34
+    }
+  ],
+  "retrieval_summary": {
+    "total_cases": 12,
+    "passed": 12,
+    "failed": 0,
+    "pass_rate_pct": 100.0,
+    "results": [
+      {
+        "id": "case_01_markdown_semantic",
+        "format": "Markdown (.md)",
+        "query": "What is the ingress port and mTLS termination requirement for the API Gateway?",
+        "expected_mode": "vector",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 301.85,
+        "top_citation": "docs/api_specification.md:L8-13",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_02_markdown_heading_lookup",
+        "format": "Markdown (.md)",
+        "query": "What does the API specification say about Database Persistence Layer and write-ahead logging?",
+        "expected_mode": "vector",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 3,
+        "expected_tokens_count": 3,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 48.05,
+        "top_citation": "docs/api_specification.md:L14-16",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_03_text_operational_semantic",
+        "format": "Plain Text (.txt)",
+        "query": "What is the health check endpoint port and path for system monitoring in operational_guide.txt?",
+        "expected_mode": "vector",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 373.57,
+        "top_citation": "operational_guide.txt:L1-11",
+        "top_score": 0.9997
+      },
+      {
+        "id": "case_04_text_exact_diagnostic",
+        "format": "Plain Text (.txt)",
+        "query": "Where are diagnostic crash dumps written when ungraceful shutdown occurs?",
+        "expected_mode": "lexical",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 56.56,
+        "top_citation": "operational_guide.txt:L1-11",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_05_json_config_lookup",
+        "format": "JSON (.json)",
+        "query": "What is the token_algorithm and token_ttl_seconds in settings.json?",
+        "expected_mode": "lexical",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 45.22,
+        "top_citation": "config/settings.json:L1-5",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_06_json_db_pool",
+        "format": "JSON (.json)",
+        "query": "What database engine and connection pool size are configured in settings.json?",
+        "expected_mode": "lexical",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 46.5,
+        "top_citation": "config/settings.json:L1-5",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_07_python_ast_exact_symbol",
+        "format": "Python (.py)",
+        "query": "Where is authenticate_user defined in the codebase?",
+        "expected_mode": "lexical",
+        "router_intent": "exact_symbol",
+        "selected_strategies": [
+          "lexical",
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 47.01,
+        "top_citation": "app/auth.py:L11-40",
+        "top_score": 0.9997
+      },
+      {
+        "id": "case_08_python_dependency_graph",
+        "format": "Python (.py)",
+        "query": "What does app/auth.py import and depend on?",
+        "expected_mode": "graph",
+        "router_intent": "relationship_dependency",
+        "selected_strategies": [
+          "graph"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 1.59,
+        "top_citation": "app/auth.py:L5-5",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_09_javascript_method_symbol",
+        "format": "JavaScript (.js)",
+        "query": "Where is getAuthorizationHeader defined in the web client?",
+        "expected_mode": "lexical",
+        "router_intent": "exact_symbol",
+        "selected_strategies": [
+          "lexical",
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 48.65,
+        "top_citation": "web/auth_client.js:L1-5",
+        "top_score": 0.9997
+      },
+      {
+        "id": "case_10_javascript_login_semantic",
+        "format": "JavaScript (.js)",
+        "query": "How does the client authenticate with loginWithCredentials in JavaScript?",
+        "expected_mode": "vector",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 45.26,
+        "top_citation": "docs/api_specification.md:L3-7",
+        "top_score": 0.9994
+      },
+      {
+        "id": "case_11_typescript_interface_symbol",
+        "format": "TypeScript (.ts)",
+        "query": "Where is the UserSessionPayload interface defined in TypeScript?",
+        "expected_mode": "lexical",
+        "router_intent": "exact_symbol",
+        "selected_strategies": [
+          "lexical",
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 2,
+        "expected_tokens_count": 2,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 45.11,
+        "top_citation": "app/session_types.ts:L12-19",
+        "top_score": 0.9997
+      },
+      {
+        "id": "case_12_typescript_enum_and_generics",
+        "format": "TypeScript (.ts)",
+        "query": "What are the states in SessionState and how does SessionRegistry check expiration in session_types.ts?",
+        "expected_mode": "vector",
+        "router_intent": "semantic_lookup",
+        "selected_strategies": [
+          "vector"
+        ],
+        "confidence": 0.9,
+        "source_matched": true,
+        "token_matched_count": 3,
+        "expected_tokens_count": 3,
+        "evidence_matched": true,
+        "status": "PASS",
+        "latency_ms": 44.18,
+        "top_citation": "app/session_types.ts:L26-42",
+        "top_score": 0.9994
+      }
+    ]
+  }
+}
