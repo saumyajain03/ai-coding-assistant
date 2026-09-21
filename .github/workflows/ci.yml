@@ -1,0 +1,66 @@
+name: SentinelForge Continuous Integration & Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    name: Code Quality, Test Suite & Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run Ruff Linter & Formatting Checks
+        run: |
+          ruff check src/ tests/ scripts/
+
+      - name: Install and Build React Frontend
+        working-directory: src/web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run Full Pytest Suite (Security, Sandbox, RAG & API)
+        env:
+          OFFLINE_MODE: "true"
+          LLM_PROVIDER: "synthetic_mock"
+        run: |
+          pytest tests/ --durations=10
+
+      - name: Run Retrieval Benchmark Evaluation
+        env:
+          OFFLINE_MODE: "true"
+          LLM_PROVIDER: "synthetic_mock"
+        run: |
+          python scripts/evaluate_retrieval.py
+
+      - name: Verify Docker Build Reproducibility
+        run: |
+          docker build -t sentinelforge:ci .

@@ -1,0 +1,50 @@
+# ==============================================================================
+# Render Blueprint Infrastructure-as-Code for Project SentinelForge
+# Configures zero-cost deployment on Render Free Tier with Docker runtime.
+#
+# Render Free Tier Limitations & Operational Characteristics:
+# 1. Ephemeral Filesystem: All data written to ./data (ChromaDB, logs, workspace)
+#    is wiped upon instance spin-down or new deployment. SentinelForge handles
+#    this gracefully by auto-creating directory structures on startup and
+#    supporting fast re-indexing via the /api/v1/upload and bootstrap flows.
+# 2. Cold Starts: Free tier web services spin down after 15 minutes of inactivity.
+#    Subsequent requests experience a 50-90s cold start while container boots.
+# 3. Memory Ceiling (512MB): Model weights for `all-MiniLM-L6-v2` are pre-baked
+#    into /app/models consuming only ~120MB, leaving ample headroom for Python
+#    runtime and ChromaDB under the 512MB boundary.
+# ==============================================================================
+
+services:
+  - type: web
+    name: sentinelforge-platform
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon # or ohio / frankfurt / singapore
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PORT
+        value: "8000"
+      - key: HOST
+        value: 0.0.0.0
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LLM_PROVIDER
+        value: groq_free
+      - key: LLM_MODEL
+        value: openai/gpt-oss-20b
+      - key: GROQ_API_KEY
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: OFFLINE_MODE
+        value: "false"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: SANDBOX_TIMEOUT_SEC
+        value: "5"
+      - key: SANDBOX_MEMORY_LIMIT_MB
+        value: "200"

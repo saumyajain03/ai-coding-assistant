@@ -1,0 +1,41 @@
+services:
+  sentinelforge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sentinelforge:latest
+    container_name: sentinelforge-platform
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq_free}
+      - LLM_MODEL=${LLM_MODEL:-openai/gpt-oss-20b}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - HF_TOKEN=${HF_TOKEN:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OFFLINE_MODE=${OFFLINE_MODE:-false}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-60}
+      - SANDBOX_TIMEOUT_SEC=${SANDBOX_TIMEOUT_SEC:-5}
+      - SANDBOX_MEMORY_LIMIT_MB=${SANDBOX_MEMORY_LIMIT_MB:-200}
+    volumes:
+      # Persistent local storage for Chroma vector DB, workspace code, and audit trail
+      - ./data:/app/data
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1024M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

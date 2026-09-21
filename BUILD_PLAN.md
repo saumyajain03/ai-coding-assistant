@@ -417,7 +417,7 @@ dexter/
 ### PHASE 8: ZERO-COST DEPLOYMENT, DOCKER & CI/CD AUTOMATION
 > **Objective**: Prepare production-grade containerization, zero-cost deployment configurations for Render Free and Hugging Face Spaces, and automated CI/CD via GitHub Actions.
 
-- [ ] **Task 8.1: Production Dockerfile (`Dockerfile`)**
+- [x] **Task 8.1: Production Dockerfile (`Dockerfile`)**
   - Multi-stage build for minimal image size:
     - Base: `python:3.11-slim-bookworm`
     - Install `nodejs` and `npm` (for JS sandbox bonus).
@@ -425,11 +425,11 @@ dexter/
     - Set non-root user `sentinel` with limited permissions.
     - Expose port `8000`.
     - Healthcheck instruction: `HEALTHCHECK CMD curl -f http://localhost:8000/api/v1/health || exit 1`.
-- [ ] **Task 8.2: Docker Compose (`docker-compose.yml`)**
+- [x] **Task 8.2: Docker Compose (`docker-compose.yml`)**
   - Define `sentinelforge` service mapping port 8000:8000.
   - Mount persistent volume for `./data` if run locally.
   - Set resource constraints (`cpus: "2"`, `mem_limit: "1024m"`).
-- [ ] **Task 8.3: Zero-Cost Cloud Deployment Configuration (`render.yaml`)**
+- [x] **Task 8.3: Zero-Cost Cloud Deployment Configuration (`render.yaml`)**
   - Provide infrastructure-as-code for Render Free:
     ```yaml
     services:
@@ -447,7 +447,7 @@ dexter/
             value: "false"
     ```
   - Gracefully handle cold starts (show loading indicator on UI) and ephemeral disk (auto-bootstrap safe samples).
-- [ ] **Task 8.4: GitHub Actions CI/CD (`.github/workflows/ci.yml`)**
+- [x] **Task 8.4: GitHub Actions CI/CD (`.github/workflows/ci.yml`)**
   - Trigger on push to `main` and pull requests:
     1. Check out code and set up Python 3.11.
     2. Install dependencies.

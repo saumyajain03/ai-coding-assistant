@@ -323,6 +323,14 @@ def execute_sandboxed_command(
         venv_pytest = workspace / ".venv" / "bin" / "pytest"
         if venv_pytest.exists():
             args[0] = str(venv_pytest)
+        else:
+            host_venv_pytest = Path(os.getcwd()).resolve() / ".venv" / "bin" / "pytest"
+            if host_venv_pytest.exists():
+                args[0] = str(host_venv_pytest)
+            else:
+                pytest_bin = shutil.which("pytest")
+                if pytest_bin:
+                    args[0] = pytest_bin
     elif binary_name in {"node", "npm", "npx"}:
         node_path = shutil.which(binary_name)
         if node_path:

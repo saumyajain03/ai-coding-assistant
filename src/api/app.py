@@ -3,8 +3,12 @@ SentinelForge Official FastAPI Application Core
 Exposes OpenAPI 3.1 documentation, interactive Swagger UI, and defensive middlewares.
 """
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.api.middleware import (
     RateLimitMiddleware,
@@ -45,6 +49,20 @@ def create_app() -> FastAPI:
 
     # 3. Mount Platform API Routers
     app.include_router(platform_router)
+
+    # 4. Mount Production Frontend (React SPA) if dist exists
+    dist_dir = Path(__file__).resolve().parent.parent / "web" / "dist"
+    if dist_dir.exists() and (dist_dir / "index.html").exists():
+        assets_dir = dist_dir / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="static_assets")
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def serve_spa(full_path: str):
+            candidate = dist_dir / full_path
+            if full_path and candidate.is_file():
+                return FileResponse(str(candidate))
+            return FileResponse(str(dist_dir / "index.html"))
 
     return app
 
