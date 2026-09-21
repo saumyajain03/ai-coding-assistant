@@ -76,6 +76,12 @@ class DeterministicMockProvider(BaseLLMProvider):
             # Extract target file if mentioned
             match = re.search(r"Target File:\s*([^\n]+)", prompt)
             target = match.group(1).strip() if match else "main.py"
+            if "calculate_discount" in prompt_lower:
+                return (
+                    f"# Proposed patch for {target}\n"
+                    "def calculate_discount(price: float, discount: float) -> float:\n"
+                    "    return price - (price * discount)\n"
+                )
             return f"# Proposed patch for {target}\n# Automated synthesis completed\ndef fixed_solution():\n    return 42\n"
 
         if "stage 6: self-critique" in prompt_lower or "stage 6" in prompt_lower:

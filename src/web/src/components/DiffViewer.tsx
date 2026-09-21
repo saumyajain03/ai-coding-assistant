@@ -144,7 +144,22 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
         overflowX: 'auto',
         maxHeight: '440px'
       }}>
-        {diffLines.map((line, idx) => {
+        {(!patch.unifiedDiff || patch.unifiedDiff === '(No changes detected)' || (patch.linesAdded === 0 && patch.linesRemoved === 0)) ? (
+          <div style={{
+            padding: '24px 20px',
+            textAlign: 'center',
+            color: '#a1a1aa',
+            fontSize: '13px'
+          }}>
+            <div style={{ color: '#38bdf8', fontWeight: 600, marginBottom: '4px' }}>
+              No Changes Detected (+0 / -0)
+            </div>
+            <div style={{ fontSize: '12px', color: '#71717a' }}>
+              The target file <code>{patch.targetFile}</code> already contains the proposed fix or matches the requested implementation state.
+            </div>
+          </div>
+        ) : (
+          diffLines.map((line, idx) => {
           let bg = 'transparent';
           let textColor = '#d4d4d8';
           let sign = ' ';
@@ -192,7 +207,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
               </pre>
             </div>
           );
-        })}
+        }))}
       </div>
     </div>
   );

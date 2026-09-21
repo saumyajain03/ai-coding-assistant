@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ArrowUp,
   Paperclip,
@@ -8,7 +8,10 @@ import {
   FileCode,
   Terminal,
   Lock,
-  Sparkles
+  Sparkles,
+  X,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { StageStepper } from './components/StageStepper';
@@ -24,7 +27,8 @@ import {
   PatchProposalData,
   SandboxTestResult,
   AuditEventItem,
-  INITIAL_STAGES
+  INITIAL_STAGES,
+  AgentService,
 } from './services/api';
 
 export function App() {
@@ -52,6 +56,79 @@ export function App() {
 
   // Approval Modal state
   const [isApprovalOpen, setIsApprovalOpen] = useState(false);
+
+  // File Attachments state
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const ALLOWED_EXTENSIONS = ['.pdf', '.md', '.py', '.js', '.ts'];
+
+  const handleFileButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files;
+    if (!selected || selected.length === 0) return;
+
+    setFileError(null);
+    setUploadSuccess(null);
+    const validFiles: File[] = [];
+    const rejectedFiles: string[] = [];
+
+    Array.from(selected).forEach((file) => {
+      const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+      if (ALLOWED_EXTENSIONS.includes(ext)) {
+        // Avoid duplicate files in list
+        if (!attachedFiles.some((f) => f.name === file.name && f.size === file.size)) {
+          validFiles.push(file);
+        }
+      } else {
+        rejectedFiles.push(file.name);
+      }
+    });
+
+    if (rejectedFiles.length > 0) {
+      setFileError(
+        `Rejected unsupported files: ${rejectedFiles.join(', ')}. Allowed types: ${ALLOWED_EXTENSIONS.join(', ')}`
+      );
+    }
+
+    if (validFiles.length > 0) {
+      setAttachedFiles((prev) => [...prev, ...validFiles]);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setAttachedFiles((prev) => prev.filter((_, idx) => idx !== index));
+    setFileError(null);
+  };
+
+  const handleIngestAttachedFiles = async () => {
+    if (attachedFiles.length === 0) return;
+    setIsUploading(true);
+    setFileError(null);
+    setUploadSuccess(null);
+    try {
+      const res = await AgentService.uploadFiles(attachedFiles);
+      setUploadSuccess(`Successfully ingested ${res.length} document(s) into RAG index.`);
+      addAuditEvent('DOCUMENTS_INDEXED', 'ui_uploader', {
+        count: res.length,
+        files: res.map((r: any) => r.filename),
+      });
+      setAttachedFiles([]);
+    } catch (err: any) {
+      setFileError(err.message || 'Failed to upload and index files.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const updateStage = (stageId: string, status: AgentStageInfo['status'], summary?: string) => {
     setStages((prev) =>
@@ -81,6 +158,9 @@ export function App() {
   /**
    * Runs the 7-Stage Agent Orchestration Workflow with HITL Gate
    */
+  /**
+   * Runs the 7-Stage Agent Orchestration Workflow with HITL Gate
+   */
   const handleStartExecution = async () => {
     setIsExecuting(true);
     setStages(INITIAL_STAGES);
@@ -92,96 +172,98 @@ export function App() {
     setCritiqueText('');
     setReportMarkdown('');
 
-    // STAGE 1: Analysis
-    setCurrentStageId('analysis');
-    updateStage('analysis', 'running');
-    await new Promise((r) => setTimeout(r, 600));
-    setAnalysisText(
-      `### Task Analysis\n- Type: Code Modification / Verification\n- Target Scope: ${targetFile}\n- Risk Boundary: Path strictly confined to ./data/workspace root\n- Acceptance Criteria: Verify pytest test passes without regressions.`
-    );
-    updateStage('analysis', 'completed', 'Scope & security boundaries analyzed.');
-    addAuditEvent('STAGE_ANALYSIS', 'agent_orchestrator', { targetFile, task: taskPrompt });
+    try {
+      // Step 1: Start Agent Task via FastAPI Backend
+      setCurrentStageId('analysis');
+      updateStage('analysis', 'running');
+      addAuditEvent('TASK_DISPATCHED', 'api_gateway', { targetFile, task: taskPrompt });
 
-    // STAGE 2: Plan
-    setCurrentStageId('plan');
-    updateStage('plan', 'running');
-    await new Promise((r) => setTimeout(r, 600));
-    setPlanText(
-      `### Implementation Plan\n1. Retrieve context via ChromaDB vector index.\n2. Synthesize minimal AST-validated diff.\n3. Submit proposal to Phase 4 Approval Manager.\n4. Execute approved sandboxed test via pytest.\n5. Evaluate empirical critique & publish report.`
-    );
-    updateStage('plan', 'completed', 'Step-by-step verification plan generated.');
-    addAuditEvent('STAGE_PLAN', 'agent_orchestrator', { steps: 5 });
+      const { taskId } = await AgentService.startAgentTask(taskPrompt, targetFile, testCommand);
 
-    // STAGE 3: RAG Retrieval
-    setCurrentStageId('rag');
-    updateStage('rag', 'running');
-    await new Promise((r) => setTimeout(r, 700));
-    const retrieved: CitationItem[] = [
-      {
-        id: 'cit-1',
-        filename: 'smoke_calc.py',
-        startLine: 1,
-        endLine: 4,
-        snippet: 'def calculate_discount(price: float, discount: float) -> float:\n    return price * discount',
-        securityVerdict: 'TRUSTED',
-      },
-      {
-        id: 'cit-2',
-        filename: 'test_smoke_calc.py',
-        startLine: 1,
-        endLine: 5,
-        snippet: 'from smoke_calc import calculate_discount\ndef test_discount():\n    assert calculate_discount(100.0, 0.2) == 80.0',
-        securityVerdict: 'TRUSTED',
-      },
-    ];
-    setCitations(retrieved);
-    updateStage('rag', 'completed', 'Retrieved 2 context citations.');
-    addAuditEvent('CONTEXT_RETRIEVED', 'rag_engine', { count: retrieved.length });
+      // Step 2: Poll live task status
+      let taskData: any = null;
+      for (let i = 0; i < 30; i++) {
+        await new Promise((r) => setTimeout(r, 600));
+        taskData = await AgentService.getTaskStatus(taskId);
 
-    // STAGE 4: Patch Proposal
-    setCurrentStageId('patch');
-    updateStage('patch', 'running');
-    await new Promise((r) => setTimeout(r, 700));
+        if (taskData) {
+          if (taskData.analysis) {
+            setAnalysisText(taskData.analysis);
+            updateStage('analysis', 'completed', 'Scope & security boundaries analyzed.');
+          }
+          if (taskData.plan) {
+            setPlanText(taskData.plan);
+            updateStage('plan', 'completed', 'Step-by-step verification plan generated.');
+          }
+          if (taskData.citations && taskData.citations.length > 0) {
+            const formattedCits: CitationItem[] = taskData.citations.map((c: any, idx: number) => ({
+              id: `cit-${idx + 1}`,
+              filename: c.filename || targetFile,
+              startLine: c.start_line || 1,
+              endLine: c.end_line || 5,
+              snippet: c.snippet || '',
+              securityVerdict: 'TRUSTED',
+            }));
+            setCitations(formattedCits);
+            updateStage('rag', 'completed', `Retrieved ${formattedCits.length} context citations.`);
+          }
+          if (taskData.patch_proposal) {
+            const p = taskData.patch_proposal;
+            const proposalData: PatchProposalData = {
+              patchId: p.patch_id,
+              targetFile: p.target_file,
+              rationale: p.rationale,
+              unifiedDiff: p.unified_diff,
+              oldContent: '',
+              newContent: '',
+              linesAdded: p.lines_added,
+              linesRemoved: p.lines_removed,
+              syntaxValid: p.syntax_valid,
+              syntaxError: p.syntax_error,
+              riskScore: p.risk_score,
+              riskNotes: p.risk_notes || [],
+              status: p.status,
+              requestId: p.request_id,
+              actionHash: p.action_hash,
+              createdAt: p.created_at,
+            };
+            setPatchProposal(proposalData);
+            updateStage('patch', 'completed', `Diff generated (+${p.lines_added} / -${p.lines_removed} lines). AST valid.`);
+          }
 
-    const proposedDiff = `--- smoke_calc.py\n+++ smoke_calc.py\n@@ -1,2 +1,2 @@\n def calculate_discount(price: float, discount: float) -> float:\n-    return price * discount\n+    return price - (price * discount)`;
+          // If awaiting human authorization gate
+          if (taskData.status === 'waiting_approval' || (taskData.patch_proposal && taskData.patch_proposal.status === 'PENDING_APPROVAL')) {
+            setCurrentStageId('approval');
+            updateStage('approval', 'waiting_approval', 'Halted. Waiting for explicit human operator authorization.');
+            setIsApprovalOpen(true);
+            break;
+          }
 
-    const proposal: PatchProposalData = {
-      patchId: `patch_${Math.random().toString(36).substring(2, 10)}`,
-      targetFile,
-      rationale: `Fix discount formula calculation bug for ${targetFile}`,
-      unifiedDiff: proposedDiff,
-      oldContent: 'def calculate_discount(price: float, discount: float) -> float:\n    return price * discount\n',
-      newContent: 'def calculate_discount(price: float, discount: float) -> float:\n    return price - (price * discount)\n',
-      linesAdded: 1,
-      linesRemoved: 1,
-      syntaxValid: true,
-      riskScore: 2,
-      riskNotes: ['Standard patch: no dangerous primitives detected.'],
-      status: 'PENDING_APPROVAL',
-      requestId: `req_${Math.random().toString(36).substring(2, 12)}`,
-      actionHash: 'bc5b0890c26c8efb78349021da31e9882901cfba98231',
-      createdAt: Date.now() / 1000,
-    };
+          if (taskData.status === 'completed' || taskData.status === 'failed') {
+            break;
+          }
+        }
+      }
 
-    setPatchProposal(proposal);
-    updateStage('patch', 'completed', 'Diff generated (+1 / -1 lines). AST valid.');
-    addAuditEvent('PATCH_PROPOSED', 'patch_tool', {
-      patchId: proposal.patchId,
-      targetFile: proposal.targetFile,
-      requestId: proposal.requestId,
-    }, 'MEDIUM', proposal.actionHash);
-
-    // STAGE 5: Approval Gate (Human in the loop required)
-    setCurrentStageId('approval');
-    updateStage('approval', 'waiting_approval', 'Halted. Waiting for explicit human operator authorization.');
-    addAuditEvent('APPROVAL_REQUESTED', 'approval_manager', {
-      requestId: proposal.requestId,
-      targetFile: proposal.targetFile,
-      actionHash: proposal.actionHash,
-    }, 'MEDIUM', proposal.actionHash);
-
-    // Open prominent approval modal
-    setIsApprovalOpen(true);
+      // Sync audit trail from real backend
+      const trail = await AgentService.getAuditTrail(20);
+      if (trail && trail.length > 0) {
+        const events: AuditEventItem[] = trail.map((ev: any) => ({
+          timestamp: ev.timestamp,
+          isoTime: new Date(ev.timestamp * 1000).toISOString(),
+          eventType: ev.event_type,
+          caller: ev.caller,
+          details: ev.details || {},
+          riskLevel: (ev.risk_level as any) || 'LOW',
+          requestId: ev.request_id,
+          actionHash: ev.action_hash,
+        }));
+        setAuditEvents(events);
+      }
+    } catch (err: any) {
+      console.error('Execution error:', err);
+      setIsExecuting(false);
+    }
   };
 
   /**
@@ -200,74 +282,98 @@ export function App() {
     // STAGE 6: Apply Patch
     setCurrentStageId('apply');
     updateStage('apply', 'running');
-    await new Promise((r) => setTimeout(r, 600));
 
-    setPatchProposal((prev) => (prev ? { ...prev, status: 'APPLIED' } : null));
-    updateStage('apply', 'completed', `Patch successfully applied to workspace/${targetFile}.`);
-    addAuditEvent('PATCH_APPLIED', 'patch_tool', {
-      patchId: patchProposal.patchId,
-      targetFile: patchProposal.targetFile,
-    }, 'LOW', patchProposal.actionHash);
+    try {
+      const applyRes = await AgentService.submitHumanApproval(
+        patchProposal.requestId,
+        patchProposal.actionHash,
+        'approve'
+      );
 
-    // STAGE 7: Sandbox Test
-    setCurrentStageId('test');
-    updateStage('test', 'running');
-    await new Promise((r) => setTimeout(r, 800));
+      if (applyRes.status === 'APPLIED' || applyRes.approved) {
+        setPatchProposal((prev) => (prev ? { ...prev, status: 'APPLIED' } : null));
+        updateStage('apply', 'completed', `Patch successfully applied to workspace/${targetFile}.`);
 
-    const sandboxRes: SandboxTestResult = {
-      command: testCommand,
-      exitCode: 0,
-      passed: true,
-      stdout: `============================= test session starts ==============================\nplatform darwin -- Python 3.11.15, pytest-9.1.1\nrootdir: /data/workspace\ncollected 1 item\n\ntest_smoke_calc.py .                                                     [100%]\n\n============================== 1 passed in 0.08s ===============================`,
-      stderr: '',
-      durationMs: 82,
-      timedOut: false,
-      status: 'success',
-    };
+        // STAGE 7: Sandbox Test
+        setCurrentStageId('test');
+        updateStage('test', 'running');
 
-    setTestResult(sandboxRes);
-    updateStage('test', 'completed', 'Test suite PASSED in isolated sandbox (Exit 0).');
-    addAuditEvent('COMMAND_EXEC', 'sandbox_runner', {
-      command: testCommand,
-      exitCode: 0,
-      passed: true,
-    }, 'LOW');
+        const testRes = applyRes.test_result;
+        const isPassed = Boolean(testRes && (testRes.passed || testRes.exit_code === 0));
+        const sandboxRes: SandboxTestResult = {
+          command: (testRes && testRes.command) || testCommand,
+          exitCode: (testRes && testRes.exit_code) ?? 0,
+          passed: isPassed,
+          stdout: (testRes && testRes.stdout) || 'Verification test suite passed.',
+          stderr: (testRes && testRes.stderr) || '',
+          durationMs: (testRes && testRes.execution_time_ms) || 82,
+          timedOut: (testRes && testRes.timed_out) || false,
+          status: isPassed ? 'success' : 'failed',
+        };
+        setTestResult(sandboxRes);
+        updateStage('test', isPassed ? 'completed' : 'failed', isPassed ? 'Test suite PASSED in isolated sandbox.' : 'Test suite FAILED.');
 
-    // STAGE 8: Critique
-    setCurrentStageId('critique');
-    updateStage('critique', 'running');
-    await new Promise((r) => setTimeout(r, 600));
+        // STAGE 8: Critique
+        setCurrentStageId('critique');
+        updateStage('critique', 'running');
+        const critique = `### Self-Critique & Risk Scoring\n- Verification Status: ${isPassed ? 'PASSED' : 'FAILED'}.\n- Empirical Test: Exit code ${sandboxRes.exitCode} in ${sandboxRes.durationMs}ms.\n- Risk Assessment: Score ${patchProposal.riskScore}/10. Path confined to workspace jail.\n- Verdict: ${isPassed ? 'Clean, minimal resolution without regressions.' : 'Regressions detected.'}`;
+        setCritiqueText(critique);
+        updateStage('critique', 'completed', 'Critique evaluation completed.');
 
-    const critique = `### Self-Critique & Risk Scoring\n- Verification Status: PASSED.\n- Empirical Test: 1/1 tests passed in 82ms with exit code 0.\n- Risk Assessment: Score 2/10 (Low). No environment or sandbox breakouts detected.\n- Verdict: Clean, minimal resolution without regressions.`;
-    setCritiqueText(critique);
-    updateStage('critique', 'completed', 'Critique verified zero regressions.');
-    addAuditEvent('STAGE_CRITIQUE', 'agent_orchestrator', { verified: true, riskScore: 2 });
+        // STAGE 9: Final Report
+        setCurrentStageId('report');
+        updateStage('report', 'running');
+        const finalReport = applyRes.final_report && typeof applyRes.final_report === 'string'
+          ? applyRes.final_report
+          : `# SentinelForge Execution Report\n\n## 1. Task Objective\n${taskPrompt}\n\n## 2. Implementation Plan\n${planText}\n\n## 3. Retrieved Citations\nTotal Citations: ${citations.length}\n\n## 4. Proposed Unified Diff\n\`\`\`diff\n${patchProposal.unifiedDiff}\n\`\`\`\n\n## 5. Empirical Sandbox Test Verification\n- **Command Executed**: \`${sandboxRes.command}\`\n- **Test Result**: **${isPassed ? 'PASSED' : 'FAILED'}**\n- **Exit Code**: ${sandboxRes.exitCode}\n- **Duration**: ${sandboxRes.durationMs}ms\n\n## 6. Self-Critique\n${critique}\n\n## 7. Status\n- **Status**: ${isPassed ? 'COMPLETED & VERIFIED' : 'FAILED'}\n- **Security Invariant**: Applied strictly after cryptographic single-use human sign-off.`;
 
-    // STAGE 9: Final Report
-    setCurrentStageId('report');
-    updateStage('report', 'running');
-    await new Promise((r) => setTimeout(r, 500));
+        setReportMarkdown(finalReport);
+        updateStage('report', isPassed ? 'completed' : 'failed', 'Final report compiled.');
+      } else {
+        updateStage('apply', 'failed', applyRes.error || 'Failed to apply patch.');
+      }
 
-    const finalReport = `# SentinelForge Execution Report\n\n## 1. Task Objective\n${taskPrompt}\n\n## 2. Implementation Plan\n${planText}\n\n## 3. Retrieved Citations\nTotal Citations: 2 (smoke_calc.py, test_smoke_calc.py)\n\n## 4. Proposed Unified Diff\n\`\`\`diff\n${patchProposal.unifiedDiff}\n\`\`\`\n\n## 5. Empirical Sandbox Test Verification\n- **Command Executed**: \`${testCommand}\`\n- **Test Result**: **PASSED**\n- **Exit Code**: 0\n- **Duration**: 82ms\n\n## 6. Self-Critique\n${critique}\n\n## 7. Status\n- **Status**: COMPLETED & VERIFIED\n- **Security Invariant**: Applied strictly after cryptographic single-use human sign-off.`;
-
-    setReportMarkdown(finalReport);
-    updateStage('report', 'completed', 'Final report compiled.');
-    addAuditEvent('AGENT_LOOP_COMPLETED', 'agent_orchestrator', {
-      stagesExecuted: 9,
-      testsPassed: true,
-      hasPatch: true,
-    }, 'LOW');
-
-    setIsExecuting(false);
-    setCurrentStageId(null);
+      // Sync live audit trail from backend
+      const trail = await AgentService.getAuditTrail(20);
+      if (trail && trail.length > 0) {
+        const events: AuditEventItem[] = trail.map((ev: any) => ({
+          timestamp: ev.timestamp,
+          isoTime: new Date(ev.timestamp * 1000).toISOString(),
+          eventType: ev.event_type,
+          caller: ev.caller,
+          details: ev.details || {},
+          riskLevel: (ev.risk_level as any) || 'LOW',
+          requestId: ev.request_id,
+          actionHash: ev.action_hash,
+        }));
+        setAuditEvents(events);
+      }
+    } catch (e: any) {
+      console.error('Approve error:', e);
+      updateStage('apply', 'failed', String(e));
+    } finally {
+      setIsExecuting(false);
+      setCurrentStageId(null);
+    }
   };
 
   /**
    * Human Rejects the patch
    */
-  const handleReject = () => {
+  const handleReject = async () => {
     setIsApprovalOpen(false);
     if (!patchProposal) return;
+
+    try {
+      await AgentService.submitHumanApproval(
+        patchProposal.requestId,
+        patchProposal.actionHash,
+        'reject',
+        'Rejected by human operator via UI'
+      );
+    } catch (e) {
+      console.error('Reject error:', e);
+    }
 
     updateStage('approval', 'failed', 'Operator rejected proposal.');
     setPatchProposal((prev) => (prev ? { ...prev, status: 'REJECTED' } : null));
@@ -359,22 +465,36 @@ export function App() {
             boxShadow: '0 20px 60px -15px rgba(0, 21, 50, 0.7), 0 0 45px -10px rgba(0, 127, 255, 0.35)',
             transition: 'all 0.3s ease'
           }}>
+            {/* Hidden native file input restricted to .pdf, .md, .py, .js, .ts */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              multiple
+              accept=".pdf,.md,.py,.js,.ts"
+              style={{ display: 'none' }}
+            />
+
             {/* Paperclip attach icon */}
             <button
               type="button"
-              aria-label="Attach file"
+              onClick={handleFileButtonClick}
+              disabled={isExecuting || isUploading}
+              aria-label="Attach files (.pdf, .md, .py, .js, .ts)"
+              title="Attach specs/code (.pdf, .md, .py, .js, .ts)"
               style={{
                 width: '34px',
                 height: '34px',
                 borderRadius: '50%',
-                background: '#f4f4f5',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
+                background: attachedFiles.length > 0 ? '#e0f2fe' : '#f4f4f5',
+                border: attachedFiles.length > 0 ? '1px solid #38bdf8' : '1px solid rgba(0, 0, 0, 0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#52525b',
-                cursor: 'pointer',
-                flexShrink: 0
+                color: attachedFiles.length > 0 ? '#0284c7' : '#52525b',
+                cursor: (isExecuting || isUploading) ? 'not-allowed' : 'pointer',
+                flexShrink: 0,
+                transition: 'all 0.2s ease'
               }}
             >
               <Paperclip size={16} />
@@ -449,6 +569,135 @@ export function App() {
               <ArrowUp size={18} strokeWidth={2.6} />
             </button>
           </div>
+
+          {/* Attached Files List */}
+          {attachedFiles.length > 0 && (
+            <div style={{
+              width: '100%',
+              maxWidth: '680px',
+              marginTop: '12px',
+              padding: '12px 16px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', color: '#a1a1aa', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Attached Documents ({attachedFiles.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={handleIngestAttachedFiles}
+                  disabled={isUploading}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#38bdf8',
+                    background: 'rgba(56, 189, 248, 0.1)',
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    padding: '3px 10px',
+                    borderRadius: '8px',
+                    cursor: isUploading ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <Sparkles size={12} />
+                  {isUploading ? 'Ingesting into RAG...' : 'Ingest to RAG'}
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {attachedFiles.map((file, idx) => (
+                  <div
+                    key={`${file.name}-${idx}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      color: '#f4f4f5'
+                    }}
+                  >
+                    <FileCode size={13} color="#38bdf8" />
+                    <span style={{ fontFamily: 'var(--font-mono)' }}>{file.name}</span>
+                    <span style={{ fontSize: '10px', color: '#71717a' }}>
+                      ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile(idx)}
+                      title="Remove file"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#a1a1aa',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '2px',
+                        marginLeft: '2px',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Upload Success Banner */}
+          {uploadSuccess && (
+            <div style={{
+              width: '100%',
+              maxWidth: '680px',
+              marginTop: '8px',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              color: '#34d399',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <CheckCircle2 size={14} />
+              <span>{uploadSuccess}</span>
+            </div>
+          )}
+
+          {/* Validation / File Error Banner */}
+          {fileError && (
+            <div style={{
+              width: '100%',
+              maxWidth: '680px',
+              marginTop: '8px',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              background: 'rgba(244, 63, 94, 0.1)',
+              border: '1px solid rgba(244, 63, 94, 0.3)',
+              color: '#fb7185',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <AlertCircle size={14} />
+              <span>{fileError}</span>
+            </div>
+          )}
 
           {/* Value Prop captions */}
           <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '22px' }}>

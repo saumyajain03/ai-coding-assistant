@@ -16,6 +16,7 @@ Strict Security Invariants:
 - Failed tests reach the Critique stage rather than being falsely reported as successes.
 """
 
+import re
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -261,7 +262,9 @@ class AgentLoop:
     ) -> AgentStepResult:
         """Stage 4: Proposes candidate unified diff without modifying disk files."""
         if not target_file:
-            target_file = "main.py"
+            # Attempt to infer target file from task description (e.g. "in smoke_calc.py")
+            file_match = re.search(r"([\w_]+\.py)", task)
+            target_file = file_match.group(1) if file_match else "main.py"
 
         workspace = Path(self.settings.WORKSPACE_ROOT).resolve()
         target_path = (workspace / target_file).resolve()

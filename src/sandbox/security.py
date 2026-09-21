@@ -8,6 +8,7 @@ Integrates with the Phase 4 Permission Model (AUTO_ALLOWED, APPROVAL_REQUIRED, A
 import os
 import re
 import shlex
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -77,7 +78,8 @@ def validate_sandbox_path(target_path: Path | str) -> tuple[bool, str | None, Pa
     workspace = Path(settings.WORKSPACE_ROOT).resolve()
 
     try:
-        p = Path(target_path)
+        raw_str = urllib.parse.unquote(str(target_path))
+        p = Path(raw_str)
         if not p.is_absolute():
             p = (workspace / p)
         # Resolve all symlinks to canonical real path
@@ -138,23 +140,21 @@ def validate_sandbox_command(
         )
 
     # 4. Path traversal & symlink jail validation on arguments
-    settings = get_settings()
-    workspace = Path(settings.WORKSPACE_ROOT).resolve()
-
+    skip_next = False
     for arg in args[1:]:
-        # Detect relative path traversals or absolute path escapes
-        if ".." in arg or (arg.startswith("/") and not arg.startswith(str(workspace))):
-            if not arg.startswith("-"):
-                valid, reason, _ = validate_sandbox_path(arg)
-                if not valid:
-                    return False, reason, []
+        if skip_next:
+            skip_next = False
+            continue
+        if arg in {"-c", "-e", "-m"}:
+            skip_next = True
+            continue
+        if arg.startswith("-"):
+            continue
 
-        # Check existing filesystem path arguments for symlink escapes
-        candidate = workspace / arg if not Path(arg).is_absolute() else Path(arg)
-        if candidate.is_symlink():
-            valid, reason, _ = validate_sandbox_path(candidate)
-            if not valid:
-                return False, reason, []
+        arg_unquoted = urllib.parse.unquote(arg)
+        valid, reason, _ = validate_sandbox_path(arg_unquoted)
+        if not valid:
+            return False, reason, []
 
     # 5. Git command policy (Read-only vs Mutating/Network)
     if binary == "git":

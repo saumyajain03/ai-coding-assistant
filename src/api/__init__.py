@@ -1,1 +1,5 @@
-"""FastAPI application layer."""
+"""FastAPI application layer exports."""
+
+from src.api.app import app, create_app
+
+__all__ = ["app", "create_app"]

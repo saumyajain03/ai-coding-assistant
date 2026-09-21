@@ -1,0 +1,82 @@
+[
+  {
+    "query_id": "EVAL-001",
+    "query": "How does verify_jwt_token validate tokens in auth_service.py?",
+    "intent": "exact_symbol",
+    "ground_truth_file": "auth_service.py",
+    "relevant_files": ["auth_service.py", "auth_docs.md"],
+    "expected_symbols": ["verify_jwt_token", "RS256"],
+    "expected_line_range": {"start": 1, "end": 18},
+    "description": "Token verification mechanism and cryptographic algorithm"
+  },
+  {
+    "query_id": "EVAL-002",
+    "query": "What is the daily transaction settlement limit and refund window?",
+    "intent": "semantic_lookup",
+    "ground_truth_file": "payment_gateway.py",
+    "relevant_files": ["payment_gateway.py", "payment_guide.md"],
+    "expected_symbols": ["DAILY_SETTLEMENT_LIMIT_INR", "REFUND_WINDOW_DAYS"],
+    "expected_line_range": {"start": 1, "end": 14},
+    "description": "Financial thresholds and settlement constraints"
+  },
+  {
+    "query_id": "EVAL-003",
+    "query": "Explain the database sharding and caching architecture.",
+    "intent": "semantic_lookup",
+    "ground_truth_file": "system_architecture.md",
+    "relevant_files": ["system_architecture.md"],
+    "expected_symbols": ["Database Sharding", "Caching Strategy"],
+    "expected_line_range": {"start": 1, "end": 16},
+    "description": "Data partitioning and caching design"
+  },
+  {
+    "query_id": "EVAL-004",
+    "query": "What are the rules for API key rotation and TLS configuration?",
+    "intent": "semantic_lookup",
+    "ground_truth_file": "security_policy.md",
+    "relevant_files": ["security_policy.md"],
+    "expected_symbols": ["API Key Rotation", "TLS 1.3"],
+    "expected_line_range": {"start": 1, "end": 12},
+    "description": "Credential lifecycle and transport security requirements"
+  },
+  {
+    "query_id": "EVAL-005",
+    "query": "How does the payment webhook handle duplicate notifications and idempotency?",
+    "intent": "semantic_lookup",
+    "ground_truth_file": "payment_gateway.py",
+    "relevant_files": ["payment_gateway.py"],
+    "expected_symbols": ["handle_payment_webhook", "idempotency_key"],
+    "expected_line_range": {"start": 10, "end": 20},
+    "description": "Idempotent payment webhook ingestion"
+  },
+  {
+    "query_id": "EVAL-006",
+    "query": "What function handles token revocation in auth service?",
+    "intent": "exact_symbol",
+    "ground_truth_file": "auth_service.py",
+    "relevant_files": ["auth_service.py", "auth_docs.md"],
+    "expected_symbols": ["revoke_token", "redis_client"],
+    "expected_line_range": {"start": 14, "end": 22},
+    "description": "Revocation list and Redis TTL blocklist"
+  },
+  {
+    "query_id": "EVAL-007",
+    "query": "What are the sandbox isolation limits and process limits?",
+    "intent": "semantic_lookup",
+    "ground_truth_file": "security_policy.md",
+    "relevant_files": ["security_policy.md"],
+    "expected_symbols": ["Sandbox Isolation Limits", "RLIMIT_AS", "RLIMIT_NPROC"],
+    "expected_line_range": {"start": 10, "end": 18},
+    "description": "Host sandbox boundary resource ceilings"
+  },
+  {
+    "query_id": "EVAL-008",
+    "query": "Where is the Redis cache invalidation logic documented?",
+    "intent": "semantic_lookup",
+    "ground_truth_file": "system_architecture.md",
+    "relevant_files": ["system_architecture.md"],
+    "expected_symbols": ["Caching Strategy and Invalidation", "LRU eviction"],
+    "expected_line_range": {"start": 8, "end": 16},
+    "description": "Distributed cache invalidation policy"
+  }
+]

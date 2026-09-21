@@ -110,6 +110,9 @@ def _prepare_sanitized_env(allow_network: bool = False) -> dict[str, str]:
     if venv_bin.exists():
         env["PATH"] = f"{venv_bin}:{env.get('PATH', '')}"
 
+    # Do not write bytecode files (.pyc) in workspace sandbox to avoid caching stale code
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+
     return env
 
 

@@ -25,9 +25,12 @@ class DiffValidationResult(BaseModel):
     syntax_error: str | None = None
     risk_score: int = 1
     risk_notes: list[str] = Field(default_factory=list)
+    rationale: str = ""
+    status: str = "PENDING_APPROVAL"
     patch_id: str | None = None
     request_id: str | None = None
     action_hash: str | None = None
+    created_at: float = 0.0
 
 
 class DiffGenerator:
@@ -151,7 +154,10 @@ class DiffGenerator:
             syntax_error=syntax_error,
             risk_score=risk_score,
             risk_notes=risk_notes,
+            rationale=rationale,
+            status=mcp_res.get("status", "PENDING_APPROVAL"),
             patch_id=patch_id,
             request_id=request_id,
             action_hash=action_hash,
+            created_at=mcp_res.get("created_at", 0.0),
         )
