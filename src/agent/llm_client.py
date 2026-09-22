@@ -178,7 +178,8 @@ class GroqFreeProvider(BaseLLMProvider):
         }
         async with httpx.AsyncClient(timeout=45.0) as client:
             resp = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
-            resp.raise_for_status()
+            if resp.is_error:
+                raise RuntimeError(f"Groq API error ({resp.status_code}): {resp.text}")
             data = resp.json()
             return data["choices"][0]["message"]["content"]
 
