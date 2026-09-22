@@ -118,10 +118,11 @@ export const AgentService = {
    */
   async startAgentTask(
     prompt: string,
-    targetFile: string = 'smoke_calc.py',
-    testCommand: string = 'pytest test_smoke_calc.py',
+    targetFile: string = '',
+    testCommand: string = '',
     proposedCode?: string,
-    skipRag: boolean = false
+    skipRag: boolean = false,
+    activeDocuments?: string[]
   ): Promise<{ taskId: string }> {
     if (USE_REAL_API) {
       const res = await fetch(`${API_BASE_URL}/chat`, {
@@ -133,6 +134,7 @@ export const AgentService = {
           test_command: testCommand,
           proposed_code: proposedCode || null,
           skip_rag: skipRag,
+          active_documents: activeDocuments || [],
         }),
       });
       if (!res.ok) {
@@ -236,14 +238,18 @@ export const AgentService = {
 
   /**
    * Uploads and indexes files via FastAPI /api/v1/upload
+   * Optionally purges previous index files when clearPrevious is true.
    */
-  async uploadFiles(files: File[]): Promise<any[]> {
+  async uploadFiles(files: File[], clearPrevious: boolean = false): Promise<any[]> {
     if (USE_REAL_API) {
       const formData = new FormData();
       for (const file of files) {
         formData.append('files', file);
       }
-      const res = await fetch(`${API_BASE_URL}/upload`, {
+      const url = clearPrevious
+        ? `${API_BASE_URL}/upload?clear_previous=true`
+        : `${API_BASE_URL}/upload`;
+      const res = await fetch(url, {
         method: 'POST',
         body: formData,
       });
@@ -260,6 +266,22 @@ export const AgentService = {
       sha256: 'mock_hash',
       is_duplicate: false,
     }));
+  },
+
+  /**
+   * Resets workspace files and completely purges all RAG knowledge stores.
+   */
+  async resetWorkspace(): Promise<{ status: string; removed_files: string[] }> {
+    if (USE_REAL_API) {
+      const res = await fetch(`${API_BASE_URL}/workspace/reset`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to reset workspace: HTTP ${res.status}`);
+      }
+      return await res.json();
+    }
+    return { status: 'reset', removed_files: [] };
   },
 };
 

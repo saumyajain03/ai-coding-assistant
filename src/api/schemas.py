@@ -11,10 +11,11 @@ from pydantic import BaseModel, Field
 # --- Agent Tasks ---
 class CreateTaskRequest(BaseModel):
     prompt: str = Field(..., min_length=3, description="Task prompt or bug description")
-    target_file: str = Field(default="smoke_calc.py", description="Workspace relative path of target file")
-    test_command: str = Field(default="pytest test_smoke_calc.py", description="Test runner command to execute in sandbox")
+    target_file: str = Field(default="", description="Workspace relative path of target file")
+    test_command: str = Field(default="", description="Test runner command to execute in sandbox")
     skip_rag: bool = Field(default=False, description="Whether to bypass local vector RAG")
     proposed_code: str | None = Field(default=None, description="Optional predetermined candidate code")
+    active_documents: list[str] = Field(default_factory=list, description="Explicit list of active documents for this task")
 
 
 class StepResultSchema(BaseModel):

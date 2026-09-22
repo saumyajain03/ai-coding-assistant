@@ -13,9 +13,9 @@
     "retrieved_citations": [
       "normal_text.pdf:Page 1 (L1-6)",
       "mixed_document.pdf:Page 1 (L1-5)",
+      "docs/api_specification.md:L1-2",
       "mixed_document.pdf:Page 2 (L1-1)",
-      "scanned_text.pdf:Page 1 (L1-1)",
-      "docs/api_specification.md:L1-2"
+      "scanned_text.pdf:Page 1 (L1-1)"
     ],
     "retrieved_pages": [
       1,
@@ -23,7 +23,7 @@
       2,
       1
     ],
-    "latency_ms": 75.46,
+    "latency_ms": 344.48,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -51,8 +51,8 @@
       "app/auth.py"
     ],
     "retrieved_citations": [
-      "app/auth.py:L11-40",
       "tests/test_auth.py:L9-13",
+      "app/auth.py:L11-40",
       "tests/test_auth.py:L16-19",
       "app/main.py:L10-20",
       "mixed_document.pdf:Page 2 (L1-1)"
@@ -60,7 +60,7 @@
     "retrieved_pages": [
       2
     ],
-    "latency_ms": 51.89,
+    "latency_ms": 57.64,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -92,12 +92,12 @@
     "retrieved_citations": [
       "app/auth.py:L11-40",
       "tests/test_auth.py:L16-19",
-      "tests/test_database.py:L8-14",
       "tests/test_auth.py:L9-13",
+      "tests/test_database.py:L8-14",
       "app/auth.py:L17-17"
     ],
     "retrieved_pages": [],
-    "latency_ms": 54.58,
+    "latency_ms": 47.97,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -129,7 +129,7 @@
       "tests/test_auth.py:L5-5"
     ],
     "retrieved_pages": [],
-    "latency_ms": 1.53,
+    "latency_ms": 1.58,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -160,7 +160,7 @@
       "app/main.py:L10-20"
     ],
     "retrieved_pages": [],
-    "latency_ms": 48.0,
+    "latency_ms": 50.21,
     "verdict": "PASS",
     "notes": [],
     "trace": [
@@ -182,20 +182,14 @@
       "normal_text.pdf"
     ],
     "retrieved_citations": [
-      "normal_text.pdf:Page 4 (L19-24)",
-      "visual_architecture.pdf:Page 3 (L3-3)",
-      "payment_guide.md:L4-6",
-      "targeted_visual_heavy.pdf:Page 1 (L1-1)",
-      "config/settings.json:L1-4"
+      "spec.md:L1-2"
     ],
-    "retrieved_pages": [
-      4,
-      3,
-      1
+    "retrieved_pages": [],
+    "latency_ms": 45.68,
+    "verdict": "FAIL",
+    "notes": [
+      "Source matched: False, Page matched: False"
     ],
-    "latency_ms": 54.16,
-    "verdict": "PASS",
-    "notes": [],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
       "Vector search returned 5 items",
@@ -217,23 +211,25 @@
     "retrieved_citations": [
       "docs/api_specification.md:L3-7",
       "scanned_text.pdf:Page 1 (L1-1)",
-      "auth_docs.md:L1-3",
-      "scanned_text.pdf:Page 2 (L1-1)",
+      "scanned_text.pdf:L1-1",
       "normal_text.pdf:Page 2 (L7-12)"
     ],
     "retrieved_pages": [
       1,
-      2,
       2
     ],
-    "latency_ms": 189.02,
+    "latency_ms": 134.79,
     "verdict": "PASS",
     "notes": [],
     "trace": [
       "Initial Plan: scanned_text via ['ocr', 'vector'] (All pages in target document 'scanned_text.pdf' are scanned pages; routing to OCR pipeline.)",
       "Vector search returned 5 items",
       "Lazy OCR returned 3 page extraction(s)",
-      "Sufficiency Evaluation: True (Evidence sufficient: count=5.)"
+      "Sufficiency Evaluation: False (Top retrieved result is a scanned page placeholder without extracted text; OCR/Visual escalation required.)",
+      "Initiating Adaptive Escalation...",
+      "Escalation added 5 BM25 results",
+      "Escalation added 3 graph edge(s) for 'scanned_text.pdf'",
+      "Final post-escalation fused results: 5"
     ]
   },
   {
@@ -248,20 +244,14 @@
       "visual_architecture.pdf"
     ],
     "retrieved_citations": [
-      "visual_architecture.pdf:Page 1 (L1-1)",
-      "mixed_document.pdf:Page 2 (L1-1)",
-      "visual_architecture.pdf:Page 2 (L2-2)",
-      "normal_text.pdf:Page 3 (L13-18)",
-      "scanned_text.pdf:Page 1 (L1-1)"
+      "IC Draft Memo \u2014 FreightFlow AI (v2) (1).pdf:Page 22 (L1007-1040)",
+      "IC Draft Memo \u2014 FreightFlow AI (v2) (1).pdf:Page 24 (L1130-1162)"
     ],
     "retrieved_pages": [
-      1,
-      2,
-      2,
-      3,
-      1
+      22,
+      24
     ],
-    "latency_ms": 58.58,
+    "latency_ms": 57.97,
     "verdict": "MANUAL REVIEW",
     "notes": [
       "Visual RAG disabled by default for 512MB RAM constraint. System gracefully fell back to text/BM25 without faking embeddings."
@@ -290,20 +280,20 @@
       "mixed_document.pdf"
     ],
     "retrieved_citations": [
-      "mixed_document.pdf:Page 3 (L7-11)",
-      "visual_architecture.pdf:Page 1 (L1-1)",
-      "payment_guide.md:L1-3",
-      "targeted_visual_heavy.pdf:Page 1 (L1-1)",
-      "docs/api_specification.md:L14-16"
+      "Frontier-Internship-Assignment.pdf:Page 3 (L91-102)",
+      "IC Draft Memo \u2014 FreightFlow AI (v2) (1).pdf:Page 71 (L3512-3595)",
+      "Frontier-Internship-Assignment.pdf:Page 3 (L66-90)"
     ],
     "retrieved_pages": [
       3,
-      1,
-      1
+      71,
+      3
     ],
-    "latency_ms": 54.38,
-    "verdict": "PASS",
-    "notes": [],
+    "latency_ms": 46.0,
+    "verdict": "FAIL",
+    "notes": [
+      "Source matched: False, Page matched: True"
+    ],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (Query begins with an explanatory/concept question starter.)",
       "Vector search returned 5 items",
@@ -322,20 +312,16 @@
       "normal_text.pdf"
     ],
     "retrieved_citations": [
-      "normal_text.pdf:Page 3 (L13-18)",
-      "docs/api_specification.md:L14-16",
-      "mixed_document.pdf:Page 4 (L12-12)",
-      "operational_guide.txt:L1-11",
-      "targeted_text_only.pdf:Page 1 (L1-5)"
+      "Frontier-Internship-Assignment.pdf:Page 3 (L91-102)"
     ],
     "retrieved_pages": [
-      3,
-      4,
-      1
+      3
     ],
-    "latency_ms": 51.96,
-    "verdict": "PASS",
-    "notes": [],
+    "latency_ms": 44.81,
+    "verdict": "FAIL",
+    "notes": [
+      "Source matched: False, Page matched: True"
+    ],
     "trace": [
       "Initial Plan: semantic_text via ['vector'] (General semantic question about concepts, documentation, or behavior.)",
       "Vector search returned 5 items",
@@ -365,7 +351,7 @@
       2,
       2
     ],
-    "latency_ms": 53.14,
+    "latency_ms": 168.23,
     "verdict": "FAIL",
     "notes": [
       "Expected BM25 lexical strategy, but router selected ['vector']."
@@ -399,10 +385,10 @@
       "app/auth.py:L17-17",
       "app/auth.py:L32-32",
       "app/auth.py:L11-11",
-      "tests/test_auth.py:L6-6"
+      "app/main.py:L7-7"
     ],
     "retrieved_pages": [],
-    "latency_ms": 1.72,
+    "latency_ms": 2.07,
     "verdict": "PASS",
     "notes": [],
     "trace": [

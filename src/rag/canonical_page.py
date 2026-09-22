@@ -319,6 +319,14 @@ class CanonicalPageStore:
             conn.commit()
             return cursor.rowcount
 
+    def reset(self) -> None:
+        """
+        Clears all canonical page records from the SQLite database.
+        """
+        with self._get_connection() as conn:
+            conn.execute("DELETE FROM canonical_pages;")
+            conn.commit()
+
     def get_stats(self) -> dict[str, Any]:
         with self._get_connection() as conn:
             total_pages = conn.execute("SELECT COUNT(*) FROM canonical_pages;").fetchone()[0]

@@ -291,6 +291,15 @@ class KnowledgeGraph:
 
         return evidence_list
 
+    def reset(self) -> None:
+        """
+        Clears all nodes and edges from the knowledge graph.
+        """
+        with self._get_connection() as conn:
+            conn.execute("DELETE FROM edges")
+            conn.execute("DELETE FROM nodes")
+            conn.commit()
+
     def count_nodes(self) -> int:
         with self._get_connection() as conn:
             return conn.execute("SELECT COUNT(*) FROM nodes").fetchone()[0]

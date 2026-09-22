@@ -188,6 +188,22 @@ class LexicalBM25Store:
 
         return results
 
+    def reset(self) -> None:
+        """
+        Clears all in-memory BM25 indices and deletes the persisted JSON index.
+        """
+        self.documents.clear()
+        self.doc_tokens.clear()
+        self.doc_lens.clear()
+        self.avg_doc_len = 0.0
+        self.doc_freqs.clear()
+        self.total_docs = 0
+        if self.persist_path and self.persist_path.exists():
+            try:
+                self.persist_path.unlink()
+            except Exception:
+                pass
+
     def count(self) -> int:
         return self.total_docs
 

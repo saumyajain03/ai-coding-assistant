@@ -14,7 +14,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile
 
 from src.agent.loop import AgentExecutionReport, AgentLoop
 from src.api.schemas import (
@@ -29,7 +29,11 @@ from src.api.schemas import (
 )
 from src.config import get_settings
 from src.mcp_server.tools.patch import _pending_patches, apply_patch_tool
+from src.rag.canonical_page import get_canonical_page_store
 from src.rag.indexer import RAGIndexer
+from src.rag.knowledge_graph import get_knowledge_graph
+from src.rag.lexical_store import get_lexical_store
+from src.rag.vector_store import get_vector_store
 from src.sandbox.audit import get_audit_logger
 from src.sandbox.policy import get_approval_manager
 from src.sandbox.runner import execute_sandboxed_command
@@ -82,6 +86,7 @@ async def start_agent_task(
                 test_command=payload.test_command,
                 proposed_code=payload.proposed_code,
                 skip_rag=payload.skip_rag,
+                active_documents=payload.active_documents or None,
             )
 
             task_entry["stages_executed"] = [s.value for s in report.stages_executed]
@@ -329,11 +334,30 @@ async def get_audit_trail(limit: int = 50) -> list[dict[str, Any]]:
 
 
 @router.post("/upload", response_model=list[dict[str, Any]])
-async def upload_documents(files: list[UploadFile] = File(...)) -> list[dict[str, Any]]:  # noqa: B008
+async def upload_documents(
+    files: list[UploadFile] = File(...),  # noqa: B008
+    clear_previous: bool = Query(False, description="Purge previous indexes and workspace files before indexing"),
+) -> list[dict[str, Any]]:
     """
     Uploads and indexes documents (.pdf, .md, .py, .js, .ts) into the RAG vector and lexical stores.
     Delegates strictly to the existing RAGIndexer without duplicating logic.
+    If clear_previous is True, resets existing stores and workspace files to avoid test cross-contamination.
     """
+    settings = get_settings()
+    if clear_previous:
+        try:
+            get_vector_store().reset()
+            get_lexical_store().reset()
+            get_knowledge_graph().reset()
+            get_canonical_page_store().reset()
+            ws = Path(settings.WORKSPACE_ROOT).resolve()
+            if ws.exists():
+                for item in ws.iterdir():
+                    if item.is_file() and not item.name.startswith("."):
+                        item.unlink(missing_ok=True)
+        except Exception:
+            pass
+
     allowed_exts = {".pdf", ".md", ".py", ".js", ".ts"}
     indexer = RAGIndexer()
     results = []
@@ -348,7 +372,6 @@ async def upload_documents(files: list[UploadFile] = File(...)) -> list[dict[str
             )
 
         content = await uploaded_file.read()
-        settings = get_settings()
         max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
         if len(content) > max_bytes:
             raise HTTPException(
@@ -358,6 +381,12 @@ async def upload_documents(files: list[UploadFile] = File(...)) -> list[dict[str
 
         try:
             res = indexer.index_file(filename=filename, content_bytes=content)
+            # Also save file to workspace directory so agent and repository tools can read it
+            ws_path = (Path(settings.WORKSPACE_ROOT) / filename).resolve()
+            if settings.is_path_in_workspace(ws_path):
+                ws_path.parent.mkdir(parents=True, exist_ok=True)
+                ws_path.write_bytes(content)
+
             results.append({
                 "filename": filename,
                 "status": res.status,
@@ -371,36 +400,58 @@ async def upload_documents(files: list[UploadFile] = File(...)) -> list[dict[str
     return results
 
 
+@router.post("/workspace/reset", response_model=dict[str, Any])
+async def reset_workspace() -> dict[str, Any]:
+    """
+    Purges all indexed chunks from vector store, lexical store, knowledge graph,
+    and canonical page store. Clears files from the workspace directory.
+    """
+    settings = get_settings()
+    workspace = Path(settings.WORKSPACE_ROOT).resolve()
+    removed_files: list[str] = []
+
+    if workspace.exists():
+        for item in workspace.iterdir():
+            if item.is_file() and not item.name.startswith("."):
+                try:
+                    item.unlink(missing_ok=True)
+                    removed_files.append(item.name)
+                except Exception:
+                    pass
+
+    # Purge all 4 RAG knowledge stores
+    try:
+        get_vector_store().reset()
+        get_lexical_store().reset()
+        get_knowledge_graph().reset()
+        get_canonical_page_store().reset()
+    except Exception:
+        pass
+
+    # Clear pending tasks and patches
+    _active_tasks.clear()
+    _pending_patches.clear()
+
+    return {
+        "status": "reset",
+        "workspace_root": str(workspace),
+        "removed_files": removed_files,
+        "timestamp": time.time(),
+    }
+
+
 @router.post("/bootstrap", response_model=dict[str, Any])
 async def bootstrap_workspace() -> dict[str, Any]:
     """
-    Initializes an ephemeral sample workspace with starter files for testing and demo flows.
+    Initializes workspace directory for real document uploads. Does not create mock files.
     """
     settings = get_settings()
     workspace = Path(settings.WORKSPACE_ROOT).resolve()
     workspace.mkdir(parents=True, exist_ok=True)
 
-    smoke_calc = workspace / "smoke_calc.py"
-    if not smoke_calc.exists():
-        smoke_calc.write_text(
-            "def calculate_discount(price: float, discount: float) -> float:\n"
-            "    '''Calculate discounted price with tax.'''\n"
-            "    return price - (price * discount)\n",
-            encoding="utf-8",
-        )
-
-    test_smoke_calc = workspace / "test_smoke_calc.py"
-    if not test_smoke_calc.exists():
-        test_smoke_calc.write_text(
-            "from smoke_calc import calculate_discount\n\n"
-            "def test_calculate_discount():\n"
-            "    assert calculate_discount(100.0, 0.2) == 80.0\n",
-            encoding="utf-8",
-        )
-
     return {
-        "status": "bootstrapped",
+        "status": "ready",
         "workspace_root": str(workspace),
-        "files_created": ["smoke_calc.py", "test_smoke_calc.py"],
+        "files_created": [],
         "timestamp": time.time(),
     }

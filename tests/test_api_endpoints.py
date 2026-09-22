@@ -372,20 +372,22 @@ def test_rate_limiter():
 
 
 def test_bootstrap_endpoint(client):
-    """Task 7.1.19: Verifies ephemeral sample workspace is correctly created."""
+    """Verifies workspace initialization is ready for real documents without creating mock files."""
     response = client.post("/api/v1/bootstrap")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "bootstrapped"
+    assert data["status"] in ["bootstrapped", "ready"]
     assert "workspace_root" in data
-    assert "smoke_calc.py" in data["files_created"]
-    assert "test_smoke_calc.py" in data["files_created"]
+    assert "smoke_calc.py" not in data.get("files_created", [])
 
-    # Verify physical file existence
-    settings = get_settings()
-    workspace = Path(settings.WORKSPACE_ROOT).resolve()
-    assert (workspace / "smoke_calc.py").exists()
-    assert (workspace / "test_smoke_calc.py").exists()
+
+def test_workspace_reset_endpoint(client):
+    """Verifies workspace and RAG index reset endpoint."""
+    response = client.post("/api/v1/workspace/reset")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "reset"
+    assert "workspace_root" in data
 
 
 

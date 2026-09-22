@@ -96,6 +96,19 @@ class LocalVectorStore:
             return count
         return 0
 
+    def reset(self) -> None:
+        """
+        Purges all chunks by deleting and recreating the collection.
+        """
+        try:
+            self.client.delete_collection("sentinelforge_knowledge")
+        except Exception:
+            pass
+        self.collection = self.client.get_or_create_collection(
+            name="sentinelforge_knowledge",
+            metadata={"hnsw:space": "cosine"},
+        )
+
     def count(self) -> int:
         return self.collection.count()
 

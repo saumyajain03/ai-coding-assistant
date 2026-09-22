@@ -5,6 +5,7 @@ canonical page/document metadata, and available modalities.
 Evaluates multi-factor evidence sufficiency and escalates conditionally.
 """
 
+from pathlib import Path
 import re
 from enum import StrEnum
 from typing import Any
@@ -625,6 +626,8 @@ def execute_adaptive_retrieval(
     query: str,
     top_k: int = 5,
     filter_filename: str | None = None,
+    filter_workspace: bool = False,
+    allowed_filenames: list[str] | None = None,
 ) -> tuple[list[dict[str, Any]], RetrievalPlan, list[str]]:
     """
     Executes query-adaptive retrieval following the minimum sufficient strategy
@@ -885,5 +888,23 @@ def execute_adaptive_retrieval(
     ]
     if clean_results:
         fused = clean_results
+
+    # Filter strictly to explicitly allowed documents if provided
+    if allowed_filenames:
+        target_set = set(allowed_filenames)
+        fused = [r for r in fused if r.get("metadata", {}).get("filename") in target_set]
+
+    # Filter to active workspace files or uploaded documents if requested
+    elif filter_workspace:
+        ws_path = Path(settings.WORKSPACE_ROOT).resolve()
+        if ws_path.exists():
+            ws_filenames = {f.name for f in ws_path.iterdir() if f.is_file()}
+            if ws_filenames:
+                ws_filtered = [
+                    r for r in fused
+                    if r.get("metadata", {}).get("filename") in ws_filenames
+                ]
+                if ws_filtered:
+                    fused = ws_filtered
 
     return fused, plan, trace

@@ -39,6 +39,8 @@ def retrieve_context_tool(
     query: str,
     top_k: int = 5,
     filter_filename: str | None = None,
+    filter_workspace: bool = True,
+    allowed_filenames: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     Retrieves context and code evidence using adaptive routing (Vector, BM25, Graph).
@@ -48,6 +50,8 @@ def retrieve_context_tool(
         query: Natural language question or code search query.
         top_k: Maximum number of citations to retrieve (default 5).
         filter_filename: Optional exact filename filter.
+        filter_workspace: Filter results strictly to files existing in the workspace (default True).
+        allowed_filenames: Filter results strictly to this specific list of filenames.
 
     Returns:
         Structured dictionary with citations, line ranges, similarity scores, and safe context.
@@ -65,6 +69,8 @@ def retrieve_context_tool(
         query=query,
         top_k=k,
         filter_filename=filter_filename,
+        filter_workspace=filter_workspace,
+        allowed_filenames=allowed_filenames,
     )
 
     items: list[CitationItem] = []

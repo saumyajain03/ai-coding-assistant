@@ -5,11 +5,11 @@
     "file_type": ".pdf",
     "chunk_count": 3,
     "sha256_hash": "1507606671b7317e39973027a112e25d1a66c6ceb58ea837c8c02500ca58bd5c",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 123.82
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 4,
+    "graph_edges_count": 3,
+    "duration_ms": 259.77
   },
   {
     "document_id": "doc_4ad8352139f2",
@@ -17,11 +17,11 @@
     "file_type": ".pdf",
     "chunk_count": 4,
     "sha256_hash": "4ad8352139f2574063bdd0af3a6a21be752d23e85c6e030bcda4d74f07d52b9b",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.51
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 5,
+    "graph_edges_count": 4,
+    "duration_ms": 105.01
   },
   {
     "document_id": "doc_1f8ece98e216",
@@ -29,11 +29,11 @@
     "file_type": ".pdf",
     "chunk_count": 5,
     "sha256_hash": "1f8ece98e2165481f09fdb91090067ca20b3f849c6b5e57bd9fedfb3cb2094a9",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.31
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 6,
+    "graph_edges_count": 5,
+    "duration_ms": 107.5
   },
   {
     "document_id": "doc_0e0cec099aa1",
@@ -41,11 +41,11 @@
     "file_type": ".pdf",
     "chunk_count": 3,
     "sha256_hash": "0e0cec099aa1d9f9156289f73b0872f3b3e27a84b68c40ef30a3953543de67e4",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.27
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 4,
+    "graph_edges_count": 3,
+    "duration_ms": 87.22
   },
   {
     "document_id": "doc_ca7e81df5798",
@@ -53,11 +53,11 @@
     "file_type": ".pdf",
     "chunk_count": 3,
     "sha256_hash": "ca7e81df5798ba05681c799072a3bc384c8d510f20da660d6174b3cd0f4fe782",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.31
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 4,
+    "graph_edges_count": 3,
+    "duration_ms": 87.03
   },
   {
     "document_id": "doc_4cf4d8e90746",
@@ -65,11 +65,11 @@
     "file_type": ".pdf",
     "chunk_count": 2,
     "sha256_hash": "4cf4d8e907466b80dccaff7392e43ac917cb77f89ac5a7ae81e9b3f91c89d3e9",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.24
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 3,
+    "graph_edges_count": 2,
+    "duration_ms": 79.34
   },
   {
     "document_id": "doc_7cb0004fd17f",
@@ -81,7 +81,7 @@
     "status": "already_indexed",
     "graph_nodes_count": 0,
     "graph_edges_count": 0,
-    "duration_ms": 1.21
+    "duration_ms": 6.62
   },
   {
     "document_id": "doc_0f9664420a94",
@@ -89,11 +89,11 @@
     "file_type": ".pdf",
     "chunk_count": 1,
     "sha256_hash": "0f9664420a94ad0c59b792bcd87d9a9d0401ec63dd61045fb69415a4622a7012",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.25
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 2,
+    "graph_edges_count": 1,
+    "duration_ms": 65.01
   },
   {
     "document_id": "doc_aec743d99d25",
@@ -101,11 +101,11 @@
     "file_type": ".pdf",
     "chunk_count": 3,
     "sha256_hash": "aec743d99d25ae1db72d2b614a9b1b7fae32d8ed3d14059d051b8dc79d9dc2f4",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.35
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 4,
+    "graph_edges_count": 3,
+    "duration_ms": 87.01
   },
   {
     "document_id": "doc_9962136af997",
@@ -113,11 +113,11 @@
     "file_type": ".md",
     "chunk_count": 1,
     "sha256_hash": "9962136af9973691a21488459097f1cb7600ba1ec6b87e4f27d9f5f6191c844c",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.32
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 2,
+    "graph_edges_count": 1,
+    "duration_ms": 63.22
   },
   {
     "document_id": "doc_68e6bc9f5868",
@@ -125,11 +125,11 @@
     "file_type": ".py",
     "chunk_count": 1,
     "sha256_hash": "68e6bc9f58687dace522ccaa6abbd710975de68a6bdbcdd5ec82653eda6711a4",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.23
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 8,
+    "graph_edges_count": 13,
+    "duration_ms": 67.58
   },
   {
     "document_id": "doc_07dde1f3d2f2",
@@ -137,11 +137,11 @@
     "file_type": ".py",
     "chunk_count": 1,
     "sha256_hash": "07dde1f3d2f27966997e5df3122ea8b5fc4028b05f8f7777a5170ef356cb0238",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.12
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 3,
+    "graph_edges_count": 2,
+    "duration_ms": 65.12
   },
   {
     "document_id": "doc_2ec5f66239fa",
@@ -149,11 +149,11 @@
     "file_type": ".py",
     "chunk_count": 1,
     "sha256_hash": "2ec5f66239fa37cfe0749906849e624be6a63fd0242f705afe6e7de88ed5dc26",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.45
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 3,
+    "graph_edges_count": 3,
+    "duration_ms": 62.85
   },
   {
     "document_id": "doc_161cd237c458",
@@ -161,11 +161,11 @@
     "file_type": ".py",
     "chunk_count": 1,
     "sha256_hash": "161cd237c45889ae9485c7d36665b3740342efe8b3abd3b22ee8bc7672f70379",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.25
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 4,
+    "graph_edges_count": 6,
+    "duration_ms": 67.01
   },
   {
     "document_id": "doc_f203886615ee",
@@ -173,11 +173,11 @@
     "file_type": ".ts",
     "chunk_count": 5,
     "sha256_hash": "f203886615ee8fcedd80948ebac95eed28750947391bf0237fceedb391b28a8d",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.19
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 4,
+    "graph_edges_count": 3,
+    "duration_ms": 137.39
   },
   {
     "document_id": "doc_267b7f46516d",
@@ -185,11 +185,11 @@
     "file_type": ".json",
     "chunk_count": 5,
     "sha256_hash": "267b7f46516d48efc0acad4fe5945191df5f8806118b39730e3a9cb51cf36590",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.08
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 6,
+    "graph_edges_count": 5,
+    "duration_ms": 101.53
   },
   {
     "document_id": "doc_3e43470763df",
@@ -197,11 +197,11 @@
     "file_type": ".md",
     "chunk_count": 4,
     "sha256_hash": "3e43470763dfff337fba7cc00547a4978109f6519d64aef84137697026d70aad",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.14
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 5,
+    "graph_edges_count": 4,
+    "duration_ms": 92.62
   },
   {
     "document_id": "doc_0e1ea8f1bb72",
@@ -209,11 +209,11 @@
     "file_type": ".py",
     "chunk_count": 3,
     "sha256_hash": "0e1ea8f1bb727fb6627fc4fc3d05d1932dbf599c428700e105f47be23d58e27a",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.35
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 6,
+    "graph_edges_count": 13,
+    "duration_ms": 87.15
   },
   {
     "document_id": "doc_713e5fab2471",
@@ -221,11 +221,11 @@
     "file_type": ".py",
     "chunk_count": 1,
     "sha256_hash": "713e5fab2471f3847206f7a1dac16982a61d0d3a88ddeb78a17377c85ff6d22a",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.1
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 3,
+    "graph_edges_count": 4,
+    "duration_ms": 64.95
   },
   {
     "document_id": "doc_090940b5121d",
@@ -233,11 +233,11 @@
     "file_type": ".js",
     "chunk_count": 3,
     "sha256_hash": "090940b5121d3581ed75868bd65b83e9acc15cad658d10527cb77259a09b49d0",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
-    "graph_edges_count": 0,
-    "duration_ms": 1.18
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 3,
+    "graph_edges_count": 2,
+    "duration_ms": 85.76
   },
   {
     "document_id": "doc_34a842a671c8",
@@ -245,10 +245,10 @@
     "file_type": ".txt",
     "chunk_count": 1,
     "sha256_hash": "34a842a671c800ca0fb6f30fc8d0276f5ca274a5ccc6965ede0093314bdeb0ba",
-    "is_duplicate": true,
-    "status": "already_indexed",
-    "graph_nodes_count": 0,
+    "is_duplicate": false,
+    "status": "indexed_successfully",
+    "graph_nodes_count": 1,
     "graph_edges_count": 0,
-    "duration_ms": 1.05
+    "duration_ms": 65.65
   }
 ]

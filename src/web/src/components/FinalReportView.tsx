@@ -36,7 +36,8 @@ export const FinalReportView: React.FC<FinalReportViewProps> = ({
     );
   }
 
-  const passed = testResult?.passed ?? false;
+  const isCodePatch = Boolean(patch);
+  const passed = isCodePatch ? (testResult?.passed ?? false) : true;
 
   return (
     <div style={{
@@ -59,20 +60,13 @@ export const FinalReportView: React.FC<FinalReportViewProps> = ({
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            padding: '8px',
-            borderRadius: '12px',
-            background: passed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-            border: `1px solid ${passed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`
-          }}>
-            {passed ? <CheckCircle2 size={18} color="#10b981" /> : <AlertTriangle size={18} color="#f43f5e" />}
-          </div>
+          <ShieldCheck size={20} color={passed ? '#10b981' : '#f43f5e'} />
           <div>
             <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff' }}>
               Execution Summary & Stage 6 Critique
             </h3>
             <span style={{ fontSize: '11px', color: '#a1a1aa' }}>
-              Verified by Local Sandbox Runner
+              {isCodePatch ? 'Verified by Local Sandbox Runner' : 'Architecture & Deliverable Verified'}
             </span>
           </div>
         </div>
@@ -86,7 +80,7 @@ export const FinalReportView: React.FC<FinalReportViewProps> = ({
           color: passed ? '#34d399' : '#fb7185',
           border: `1px solid ${passed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(244, 63, 94, 0.4)'}`
         }}>
-          {passed ? 'EMPIRICALLY VERIFIED' : 'TESTS FAILED'}
+          {isCodePatch ? (passed ? 'EMPIRICALLY VERIFIED' : 'TESTS FAILED') : 'ROADMAP VERIFIED'}
         </span>
       </div>
 

@@ -8,6 +8,7 @@ Supports:
 """
 
 import abc
+import asyncio
 import re
 
 import httpx
@@ -159,7 +160,7 @@ class GroqFreeProvider(BaseLLMProvider):
         prompt: str,
         system_prompt: str = "",
         temperature: float = 0.2,
-        max_tokens: int = 2048,
+        max_tokens: int = 1024,
     ) -> str:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -176,12 +177,42 @@ class GroqFreeProvider(BaseLLMProvider):
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            resp = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
-            if resp.is_error:
-                raise RuntimeError(f"Groq API error ({resp.status_code}): {resp.text}")
-            data = resp.json()
-            return data["choices"][0]["message"]["content"]
+
+        last_error_text = ""
+        for attempt in range(3):
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                resp = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
+
+                # Case 1: Model emitted unexpected tool call (tool_use_failed) -> switch to openai/gpt-oss-120b
+                if resp.is_error and "tool_use_failed" in resp.text:
+                    payload["model"] = "openai/gpt-oss-120b"
+                    continue
+
+                # Case 2: Groq rate limit (429) -> read retry-after delay and wait
+                if resp.status_code == 429 and attempt < 2:
+                    retry_delay = 6.0
+                    try:
+                        if "retry-after" in resp.headers:
+                            retry_delay = float(resp.headers["retry-after"]) + 0.5
+                        elif "Please try again in " in resp.text:
+                            match = re.search(r"Please try again in (\d+(\.\d+)?)s", resp.text)
+                            if match:
+                                retry_delay = float(match.group(1)) + 1.0
+                    except Exception:
+                        pass
+                    # Clamp delay to at most 14 seconds
+                    await asyncio.sleep(min(retry_delay, 14.0))
+                    payload["model"] = "openai/gpt-oss-120b"
+                    continue
+
+                if resp.is_error:
+                    last_error_text = f"Groq API error ({resp.status_code}): {resp.text}"
+                    raise RuntimeError(last_error_text)
+
+                data = resp.json()
+                return data["choices"][0]["message"]["content"]
+
+        raise RuntimeError(last_error_text or "Groq API request failed after retries.")
 
 
 class HuggingFaceFreeProvider(BaseLLMProvider):
