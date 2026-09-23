@@ -282,9 +282,24 @@ export function App() {
               requestId: p.request_id,
               actionHash: p.action_hash,
               createdAt: p.created_at,
+              bundleId: p.bundle_id,
+              isNewFile: p.is_new_file,
+              files: p.files ? p.files.map((f: any) => ({
+                targetFile: f.target_file,
+                isNewFile: f.is_new_file,
+                proposedContent: f.proposed_content,
+                originalContent: f.original_content,
+                unifiedDiff: f.unified_diff,
+                linesAdded: f.lines_added,
+                linesRemoved: f.lines_removed,
+                syntaxValid: f.syntax_valid,
+                syntaxError: f.syntax_error,
+                riskScore: f.risk_score,
+              })) : undefined,
             };
             setPatchProposal(proposalData);
-            updateStage('patch', 'completed', `Diff generated (+${p.lines_added} / -${p.lines_removed} lines).`);
+            const fileCountDesc = (p.files && p.files.length > 1) ? ` (${p.files.length} files)` : '';
+            updateStage('patch', 'completed', `Diff generated${fileCountDesc} (+${p.lines_added} / -${p.lines_removed} lines).`);
           }
 
           if (taskData.critique) {

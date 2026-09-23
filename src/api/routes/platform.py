@@ -28,7 +28,12 @@ from src.api.schemas import (
     TaskStatusResponse,
 )
 from src.config import get_settings
-from src.mcp_server.tools.patch import _pending_patches, apply_patch_tool
+from src.mcp_server.tools.patch import (
+    _pending_bundles,
+    _pending_patches,
+    apply_multi_patch_tool,
+    apply_patch_tool,
+)
 from src.rag.canonical_page import get_canonical_page_store
 from src.rag.indexer import RAGIndexer
 from src.rag.knowledge_graph import get_knowledge_graph
@@ -117,6 +122,9 @@ async def start_agent_task(
                     "request_id": report.patch_result.request_id,
                     "action_hash": report.patch_result.action_hash,
                     "created_at": report.patch_result.created_at,
+                    "bundle_id": report.patch_result.bundle_id,
+                    "is_new_file": report.patch_result.is_new_file,
+                    "files": report.patch_result.files,
                 }
                 # Check if waiting for approval
                 if report.patch_result.status == "PENDING_APPROVAL":
@@ -225,7 +233,7 @@ async def submit_patch_action(payload: PatchApprovalRequest) -> PatchApprovalRes
         approved=True,
     )
 
-    # Find the patch_id associated with this request
+    # Find the patch_id or bundle_id associated with this request
     target_patch_id = None
     target_file = None
     for pid, entry in _pending_patches.items():
@@ -235,9 +243,16 @@ async def submit_patch_action(payload: PatchApprovalRequest) -> PatchApprovalRes
             break
 
     if not target_patch_id:
+        for bid, bentry in _pending_bundles.items():
+            if bentry.get("request_id") == payload.request_id:
+                target_patch_id = bid
+                target_file = ", ".join(f.get("target_file", "") for f in bentry.get("files", []))
+                break
+
+    if not target_patch_id:
         raise HTTPException(
             status_code=404,
-            detail=f"No pending patch found matching request ID '{payload.request_id}'.",
+            detail=f"No pending patch or bundle found matching request ID '{payload.request_id}'.",
         )
 
     # Find if there is an associated test_command in active tasks
@@ -249,12 +264,28 @@ async def submit_patch_action(payload: PatchApprovalRequest) -> PatchApprovalRes
             associated_task = t
             break
 
-    # Apply patch using existing apply_patch_tool with token
-    apply_res = apply_patch_tool(
-        patch_id=target_patch_id,
-        approval_token=token.model_dump(),
-        test_command=test_cmd,
-    )
+    # Check if this proposal corresponds to a multi-file bundle or single patch
+    is_bundle = (target_patch_id in _pending_bundles) or (payload.request_id in [b.get("request_id") for b in _pending_bundles.values()])
+    bundle_id = target_patch_id if target_patch_id in _pending_bundles else None
+    if not bundle_id and is_bundle:
+        for bid, bentry in _pending_bundles.items():
+            if bentry.get("request_id") == payload.request_id:
+                bundle_id = bid
+                break
+
+    if is_bundle and bundle_id:
+        apply_res = apply_multi_patch_tool(
+            bundle_id=bundle_id,
+            approval_token=token.model_dump(),
+            test_command=test_cmd,
+        )
+    else:
+        # Apply patch using existing apply_patch_tool with token
+        apply_res = apply_patch_tool(
+            patch_id=target_patch_id,
+            approval_token=token.model_dump(),
+            test_command=test_cmd,
+        )
 
     if apply_res.get("status") != "APPLIED":
         return PatchApprovalResponse(

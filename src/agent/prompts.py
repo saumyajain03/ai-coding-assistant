@@ -63,7 +63,7 @@ Provide direct markdown text. Do not output raw JSON tool calls.
 """
 
 STAGE_PATCH_PROMPT = """You are performing Stage 4: Patch Synthesis.
-Target File: {target_file}
+Target File(s): {target_file}
 Current Content:
 ```
 {current_content}
@@ -74,23 +74,45 @@ Implementation Objective:
 Retrieved Citations & References:
 {context}
 
-Generate the updated, complete content for the target file to solve the objective.
-Ensure the code is clean, syntactically correct, and preserves existing style.
+Test Contract (the generated code MUST satisfy these tests exactly):
+```python
+{test_content}
+```
+
+CRITICAL RULES:
+1. If the task or objective involves creating, separating, or modifying multiple files (or modules like models, routers, main app, tests), you MUST format each file using explicit file markers:
+***FILE: filename.ext***
+<full file content here>
+***END_FILE***
+Never combine multiple files into one file when multiple files are requested.
+2. If only a single file is being modified or created, you can output the file content directly or use the ***FILE: {target_file}*** block.
+3. Every function, class, and return value must exactly match the required interfaces and test specifications.
+4. Return values must include ALL fields checked by tests.
+5. The code must be syntactically valid with no enclosing conversational filler text.
+6. Do NOT truncate the output — output the entire file content for every file specified.
 """
 
 STAGE_CRITIQUE_PROMPT = """You are performing Stage 6: Self-Critique & Risk Scoring.
-Patch Proposed:
+Patch Proposed (Unified Diff):
 {diff}
-Sandbox Execution Results:
+
+Note: Stage 5 runs on the PRE-PATCH baseline (before the patch is applied to disk).
+The post-apply verification test will run after human approval.
+
+Pre-Patch Baseline Test Results:
 Exit Code: {exit_code}
 Passed: {passed}
-Stdout: {stdout}
-Stderr: {stderr}
+Stdout:
+{stdout}
+Stderr:
+{stderr}
 
-Evaluate the result rigorously:
-1. Did the tests actually pass? If not, what caused the failure?
-2. Are there remaining edge cases or potential regression risks?
-3. Assign a risk score from 1 (minimal) to 10 (critical) with clear rationale.
+Evaluate rigorously:
+1. Does the proposed diff look complete and correct relative to the test contract?
+2. Are there obvious missing fields, return values, or edge cases in the patch?
+3. What risks exist if this patch is applied?
+4. Assign a risk score from 1 (minimal) to 10 (critical) with rationale.
+Provide a concise but detailed markdown assessment.
 """
 
 STAGE_REPORT_PROMPT = """You are performing Stage 7: Final Report Generation.

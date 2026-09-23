@@ -35,6 +35,19 @@ export interface CitationItem {
   securityVerdict?: 'TRUSTED' | 'SANITIZED' | 'UNTRUSTED_WRAPPED';
 }
 
+export interface FilePatchItem {
+  targetFile: string;
+  isNewFile: boolean;
+  proposedContent: string;
+  originalContent: string;
+  unifiedDiff: string;
+  linesAdded: number;
+  linesRemoved: number;
+  syntaxValid: boolean;
+  syntaxError?: string | null;
+  riskScore: number;
+}
+
 export interface PatchProposalData {
   patchId: string;
   targetFile: string;
@@ -52,6 +65,9 @@ export interface PatchProposalData {
   requestId: string;
   actionHash: string;
   createdAt: number;
+  bundleId?: string | null;
+  isNewFile?: boolean;
+  files?: FilePatchItem[];
 }
 
 export interface SandboxTestResult {

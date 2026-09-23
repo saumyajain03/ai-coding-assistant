@@ -171,38 +171,41 @@ class GroqFreeProvider(BaseLLMProvider):
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        safe_max_tokens = min(max_tokens, 1500)
         payload = {
             "model": self.model,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": max_tokens,
+            "max_tokens": safe_max_tokens,
         }
 
         last_error_text = ""
-        for attempt in range(3):
+        for attempt in range(4):
             async with httpx.AsyncClient(timeout=60.0) as client:
                 resp = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
 
-                # Case 1: Model emitted unexpected tool call (tool_use_failed) -> switch to openai/gpt-oss-120b
+                # Case 1: Model emitted unexpected tool call (tool_use_failed) -> fallback
                 if resp.is_error and "tool_use_failed" in resp.text:
                     payload["model"] = "openai/gpt-oss-120b"
                     continue
 
                 # Case 2: Groq rate limit (429) -> read retry-after delay and wait
-                if resp.status_code == 429 and attempt < 2:
-                    retry_delay = 6.0
+                if resp.status_code == 429 and attempt < 3:
+                    retry_delay = 8.0 * (attempt + 1)
                     try:
                         if "retry-after" in resp.headers:
-                            retry_delay = float(resp.headers["retry-after"]) + 0.5
+                            retry_delay = float(resp.headers["retry-after"]) + 1.0
                         elif "Please try again in " in resp.text:
                             match = re.search(r"Please try again in (\d+(\.\d+)?)s", resp.text)
                             if match:
-                                retry_delay = float(match.group(1)) + 1.0
+                                retry_delay = float(match.group(1)) + 2.0
                     except Exception:
                         pass
-                    # Clamp delay to at most 14 seconds
-                    await asyncio.sleep(min(retry_delay, 14.0))
-                    payload["model"] = "openai/gpt-oss-120b"
+                    # If TPM reached on current model, try qwen/qwen3.8-27b with reduced max_tokens
+                    if "TPM" in resp.text and payload["model"] != "qwen/qwen3.8-27b":
+                        payload["model"] = "qwen/qwen3.8-27b"
+                        payload["max_tokens"] = min(payload["max_tokens"], 900)
+                    await asyncio.sleep(min(retry_delay, 30.0))
                     continue
 
                 if resp.is_error:

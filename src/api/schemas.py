@@ -40,6 +40,9 @@ class PatchProposalSchema(BaseModel):
     request_id: str
     action_hash: str
     created_at: float
+    bundle_id: str | None = None
+    is_new_file: bool = False
+    files: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class TaskStatusResponse(BaseModel):

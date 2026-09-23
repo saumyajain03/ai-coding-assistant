@@ -313,13 +313,13 @@ def execute_sandboxed_command(
 
     # 4. Resolve executable path cleanly (Dual runtime: Python / Node.js)
     binary_name = args[0].lower()
-    if binary_name in {"python", "python3"}:
+    if binary_name in {"python", "python3"} or binary_name.endswith("/python") or binary_name.endswith("/python3"):
         venv_python = workspace / ".venv" / "bin" / "python"
         if venv_python.exists():
             args[0] = str(venv_python)
         else:
             args[0] = sys.executable
-    elif binary_name == "pytest":
+    elif binary_name == "pytest" or binary_name.endswith("/pytest"):
         venv_pytest = workspace / ".venv" / "bin" / "pytest"
         if venv_pytest.exists():
             args[0] = str(venv_pytest)

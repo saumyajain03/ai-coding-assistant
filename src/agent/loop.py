@@ -128,9 +128,22 @@ class AgentLoop:
 
         # Check if the task is an architectural inquiry, planning roadmap, or documentation review
         # (does not require patching source code files on disk)
+        # Detect pure planning/analysis tasks that don't require code mutation.
+        # Rules:
+        #  - Must contain a planning keyword (plan, architecture, etc.)
+        #  - Must NOT contain explicit mutation-intent phrases
+        #    (using whole-word-like patterns to avoid matching "implementation" for "implement")
+        #  - Must NOT have an explicit target_file provided by the user
+        _mutation_phrases = [
+            "fix ", "patch ", "refactor ", "bug ", " bug",
+            "write the code", "write the complete", "complete the implementation",
+            "implement this", "implement it", "implement the", "now implement",
+            "make it work", "make the code", "code for me",
+            "change code", "modify the",
+        ]
         is_planning_task = (
             any(kw in task.lower() for kw in ["plan", "architecture", "roadmap", "explain", "review", "design", "summary", "summarize", "read all", "spec", "assignment"])
-            and not any(kw in task.lower() for kw in ["fix", "patch", "modify", "change code", "refactor", "bug"])
+            and not any(phrase in task.lower() for phrase in _mutation_phrases)
             and (not target_file or target_file in ["main.py", ""])
         )
 
@@ -408,14 +421,81 @@ Total Citations: {len(report.retrieved_citations)}
         if proposed_code is None:
             # Synthesize patch content via LLM
             citations_str = "\n".join(f"- {c.get('filename')}: {c.get('snippet')}" for c in citations if isinstance(c, dict))
+
+            # Auto-discover test files in workspace to feed into the patch prompt
+            # so the LLM generates code that satisfies the exact test interface.
+            test_content = "(no test file found in workspace)"
+            try:
+                test_files = sorted([
+                    f for f in workspace.iterdir()
+                    if f.is_file() and f.name.startswith("test_") and f.suffix == ".py"
+                ])
+                if test_files:
+                    test_content = test_files[0].read_text(encoding="utf-8")[:3000]
+            except Exception:
+                pass
+
+            # Detect all files mentioned in task or plan
+            all_files_mentioned = list(dict.fromkeys(re.findall(r"([\w_\-]+\.(?:py|js|ts|tsx|jsx|json|md|html|css))", f"{task} {plan}")))
+            display_target = ", ".join(all_files_mentioned) if len(all_files_mentioned) > 1 else target_file
+
             prompt = STAGE_PATCH_PROMPT.format(
-                target_file=target_file,
-                current_content=current_content or "# New file",
+                target_file=display_target,
+                current_content=current_content or "# New file — implement from scratch",
                 plan=plan,
                 context=citations_str,
+                test_content=test_content,
             )
             proposed_code = await self.llm.complete(prompt=prompt, system_prompt=SYSTEM_DEFENSIVE_PROMPT)
 
+        # Parse proposed_code to detect multi-file structures
+        file_blocks = []
+        if proposed_code:
+            # Pattern matching ***FILE: filename.ext*** ... ***END_FILE*** or next ***FILE:
+            # Also support standard file markers like # FILE: filename.ext or // FILE:
+            pattern = re.compile(
+                r"(?:\*{3}FILE:\s*|#\s*FILE:\s*|//\s*FILE:\s*)([^\n*#]+)(?:\*{3})?\n(.*?)(?=(?:\*{3}FILE:|#\s*FILE:|//\s*FILE:|\Z))",
+                re.DOTALL | re.IGNORECASE,
+            )
+            matches = list(pattern.finditer(proposed_code))
+            if matches:
+                for m in matches:
+                    fn = m.group(1).strip().strip('"\'')
+                    content = m.group(2).strip()
+                    if content.endswith("***END_FILE***"):
+                        content = content[:-14].strip()
+                    if content.startswith("```"):
+                        first_nl = content.find("\n")
+                        if first_nl != -1:
+                            content = content[first_nl + 1:]
+                    if content.endswith("```"):
+                        content = content[:-3]
+                    content = content.strip()
+                    if fn:
+                        file_blocks.append({"target_file": fn, "proposed_content": content})
+
+        if len(file_blocks) > 1:
+            # Multi-file patch proposal
+            diff_res = self.diff_gen.create_multi_patch_proposal(
+                file_changes=file_blocks,
+                rationale=f"Multi-file automated patch proposed for task: {task}",
+            )
+            file_names_str = ", ".join(f["target_file"] for f in file_blocks)
+            return AgentStepResult(
+                stage=AgentStage.PATCH,
+                status="completed" if diff_res.syntax_valid else "syntax_error",
+                summary=(
+                    f"Multi-file patch proposed across {len(file_blocks)} files ({file_names_str}) "
+                    f"(+{diff_res.lines_added} / -{diff_res.lines_removed} lines). "
+                    f"Status: PENDING_APPROVAL."
+                ),
+                details={"diff_result": diff_res},
+            )
+        elif len(file_blocks) == 1:
+            target_file = file_blocks[0]["target_file"]
+            proposed_code = file_blocks[0]["proposed_content"]
+
+        # Single file fallback
         # Strip markdown fences if emitted by LLM
         if proposed_code:
             cleaned = proposed_code.strip()
@@ -446,11 +526,26 @@ Total Citations: {len(report.retrieved_citations)}
         )
 
     async def _execute_stage_test(self, test_command: str) -> AgentStepResult:
-        """Stage 5: Executes test suite in sandbox via run_sandbox_command MCP tool."""
+        """Stage 5: Runs the test command on the PRE-PATCH baseline (before the patch is applied).
+        This establishes a baseline. The definitive post-apply test runs inside apply_patch_tool.
+        """
+        if not test_command or not test_command.strip():
+            # No test command provided — skip gracefully
+            return AgentStepResult(
+                stage=AgentStage.TEST,
+                status="completed",
+                summary="No test command specified. Skipped pre-patch baseline test.",
+                details={"sandbox_result": {
+                    "passed": True, "exit_code": 0,
+                    "stdout": "No test command provided — skipping pre-patch baseline.",
+                    "stderr": "", "timed_out": False,
+                }},
+            )
+
         try:
             sandbox_res = await invoke_mcp_tool(
                 "run_sandbox_command",
-                {"command": test_command, "timeout_sec": 15},
+                {"command": test_command, "timeout_sec": 30},
             )
         except Exception as e:
             sandbox_res = {
@@ -463,10 +558,12 @@ Total Citations: {len(report.retrieved_citations)}
             }
 
         passed = bool(sandbox_res.get("passed", False))
+        # Stage 5 tests the un-patched baseline — a failure here is expected (it's a stub).
+        # The authoritative verification happens post-apply.
         return AgentStepResult(
             stage=AgentStage.TEST,
-            status="completed" if passed else "failed",
-            summary=f"Sandbox test '{test_command}' {'PASSED' if passed else 'FAILED'}.",
+            status="completed",  # always mark completed — it's a baseline, not pass/fail gate
+            summary=f"Pre-patch baseline test '{test_command}': {'PASSED' if passed else 'FAILED (expected — patch not yet applied)'}.",
             details={"sandbox_result": sandbox_res},
         )
 

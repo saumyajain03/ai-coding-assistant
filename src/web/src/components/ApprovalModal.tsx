@@ -111,6 +111,58 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
               {patch.riskScore >= 5 ? 'HIGH RISK' : (patch.riskScore >= 3 ? 'MEDIUM RISK' : 'LOW RISK')} ({patch.riskScore}/10)
             </span>
           </div>
+
+          {/* If multi-file bundle, show files breakdown */}
+          {patch.files && patch.files.length > 1 && (
+            <div style={{
+              marginTop: '4px',
+              paddingTop: '10px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}>
+              <span style={{ color: '#a1a1aa', fontWeight: 600, fontSize: '11px' }}>
+                Files in this atomic transaction ({patch.files.length}):
+              </span>
+              <div style={{
+                maxHeight: '120px',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                {patch.files.map((f) => (
+                  <div
+                    key={f.targetFile}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-mono)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FileCode size={12} color="#38bdf8" />
+                      <span style={{ color: '#f4f4f5' }}>{f.targetFile}</span>
+                      {f.isNewFile && (
+                        <span style={{ fontSize: '9px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '1px 4px', borderRadius: '4px' }}>
+                          NEW
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '10px', color: '#a1a1aa' }}>
+                      +{f.linesAdded} / -{f.linesRemoved}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Security Invariant Guarantee */}
@@ -128,7 +180,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
         }}>
           <KeyRound size={16} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
           <span>
-            <strong>Single-Use Cryptographic Token:</strong> Authorizing this proposal generates an immutable token bound specifically to this action hash. It cannot be replayed or repurposed.
+            <strong>Single-Use Cryptographic Token:</strong> Authorizing this proposal generates an immutable token bound specifically to this action hash. It applies all files atomically with automatic rollback on error.
           </span>
         </div>
 
@@ -147,7 +199,9 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
             className="btn-success"
           >
             <Check size={15} />
-            Authorize & Apply Patch
+            {patch.files && patch.files.length > 1
+              ? `Authorize & Apply All (${patch.files.length} Files)`
+              : 'Authorize & Apply Patch'}
           </button>
         </div>
       </div>

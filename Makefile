@@ -33,8 +33,8 @@ eval:
 	$(PYTHON) scripts/evaluate_retrieval.py
 
 dev:
-	@echo ">> Starting SentinelForge API & UI on http://localhost:8000..."
-	$(UVICORN) src.api.app:app --host 0.0.0.0 --port 8000 --reload
+	@echo ">> Starting SentinelForge API & UI on http://localhost:8001..."
+	$(UVICORN) src.api.app:app --host 0.0.0.0 --port 8001 --reload --reload-dir src
 
 clean:
 	@echo ">> Cleaning cache and ephemeral data..."

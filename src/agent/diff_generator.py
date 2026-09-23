@@ -7,11 +7,12 @@ and registers proposals with the Phase 4 Approval Manager without modifying disk
 import ast
 import difflib
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from src.config import get_settings
-from src.mcp_server.tools.patch import propose_patch_tool
+from src.mcp_server.tools.patch import propose_multi_patch_tool, propose_patch_tool
 
 
 class DiffValidationResult(BaseModel):
@@ -31,6 +32,10 @@ class DiffValidationResult(BaseModel):
     request_id: str | None = None
     action_hash: str | None = None
     created_at: float = 0.0
+    # Multi-file fields
+    bundle_id: str | None = None
+    is_new_file: bool = False
+    files: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class DiffGenerator:
@@ -160,4 +165,41 @@ class DiffGenerator:
             request_id=request_id,
             action_hash=action_hash,
             created_at=mcp_res.get("created_at", 0.0),
+        )
+
+    def create_multi_patch_proposal(
+        self,
+        file_changes: list[dict[str, str]],
+        rationale: str,
+    ) -> DiffValidationResult:
+        """
+        Validates multiple file changes, generates individual & combined diffs,
+        and registers a unified multi-file proposal bundle via propose_multi_patch_tool.
+        Disk files remain untouched until explicit operator authorization.
+        """
+        mcp_res = propose_multi_patch_tool(
+            file_changes=file_changes,
+            rationale=rationale,
+        )
+
+        return DiffValidationResult(
+            target_file=mcp_res.get("target_file", "Multiple files"),
+            original_content="",
+            proposed_content="",
+            unified_diff=mcp_res.get("unified_diff", ""),
+            lines_added=mcp_res.get("lines_added", 0),
+            lines_removed=mcp_res.get("lines_removed", 0),
+            syntax_valid=mcp_res.get("syntax_valid", True),
+            syntax_error=mcp_res.get("syntax_error"),
+            risk_score=mcp_res.get("risk_score", 1),
+            risk_notes=mcp_res.get("risk_notes", []),
+            rationale=rationale,
+            status=mcp_res.get("status", "PENDING_APPROVAL"),
+            patch_id=mcp_res.get("patch_id"),
+            request_id=mcp_res.get("request_id"),
+            action_hash=mcp_res.get("action_hash"),
+            created_at=mcp_res.get("created_at", 0.0),
+            bundle_id=mcp_res.get("bundle_id"),
+            is_new_file=mcp_res.get("is_new_file", False),
+            files=mcp_res.get("files", []),
         )

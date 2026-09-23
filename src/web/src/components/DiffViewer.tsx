@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileCode, Plus, Minus, Check, Copy } from 'lucide-react';
+import { FileCode, Plus, Minus, Check, Copy, Files } from 'lucide-react';
 import { PatchProposalData } from '../services/api';
 
 interface DiffViewerProps {
@@ -8,6 +8,7 @@ interface DiffViewerProps {
 
 export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
   const [copied, setCopied] = useState(false);
+  const [selectedFileIdx, setSelectedFileIdx] = useState<number>(0);
 
   if (!patch) {
     return (
@@ -28,13 +29,25 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
     );
   }
 
+  const hasMultiFiles = Boolean(patch.files && patch.files.length > 1);
+  const currentFile = (hasMultiFiles && patch.files && patch.files[selectedFileIdx])
+    ? patch.files[selectedFileIdx]
+    : null;
+
+  const activeTargetFile = currentFile ? currentFile.targetFile : patch.targetFile;
+  const activeUnifiedDiff = currentFile ? currentFile.unifiedDiff : patch.unifiedDiff;
+  const activeLinesAdded = currentFile ? currentFile.linesAdded : patch.linesAdded;
+  const activeLinesRemoved = currentFile ? currentFile.linesRemoved : patch.linesRemoved;
+  const activeSyntaxValid = currentFile ? currentFile.syntaxValid : patch.syntaxValid;
+  const activeIsNew = currentFile ? currentFile.isNewFile : Boolean(patch.isNewFile);
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(patch.unifiedDiff);
+    navigator.clipboard.writeText(activeUnifiedDiff);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const diffLines = patch.unifiedDiff.split('\n');
+  const diffLines = activeUnifiedDiff.split('\n');
 
   return (
     <div style={{
@@ -45,6 +58,58 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
       border: '1px solid rgba(255, 255, 255, 0.12)',
       boxShadow: '0 12px 40px -12px rgba(0, 0, 0, 0.7)'
     }}>
+      {/* Multi-File Tab Selector (when multiple files are proposed) */}
+      {hasMultiFiles && patch.files && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 16px',
+          background: 'rgba(0, 0, 0, 0.4)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          overflowX: 'auto'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#a1a1aa', marginRight: '6px' }}>
+            <Files size={13} color="#38bdf8" />
+            <span>Files ({patch.files.length}):</span>
+          </div>
+          {patch.files.map((f, idx) => {
+            const isSelected = idx === selectedFileIdx;
+            return (
+              <button
+                key={f.targetFile}
+                onClick={() => setSelectedFileIdx(idx)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  cursor: 'pointer',
+                  border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                  color: isSelected ? '#38bdf8' : '#d4d4d8',
+                  fontWeight: isSelected ? 600 : 400,
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {f.isNewFile && (
+                  <span style={{ fontSize: '9px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '1px 4px', borderRadius: '4px' }}>
+                    NEW
+                  </span>
+                )}
+                <span>{f.targetFile}</span>
+                <span style={{ fontSize: '10px', color: '#71717a' }}>
+                  (+{f.linesAdded}/-{f.linesRemoved})
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Header bar */}
       <div style={{
         padding: '14px 20px',
@@ -57,8 +122,20 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <FileCode size={18} color="#38bdf8" />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 600, color: '#f4f4f5' }}>
-            {patch.targetFile}
+            {activeTargetFile}
           </span>
+          {activeIsNew && (
+            <span style={{
+              fontSize: '10px',
+              color: '#34d399',
+              background: 'rgba(16, 185, 129, 0.15)',
+              padding: '2px 6px',
+              borderRadius: '6px',
+              fontWeight: 600
+            }}>
+              CREATE NEW FILE
+            </span>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{
               display: 'inline-flex',
@@ -71,7 +148,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
               borderRadius: '6px',
               fontFamily: 'var(--font-mono)'
             }}>
-              <Plus size={11} /> {patch.linesAdded}
+              <Plus size={11} /> {activeLinesAdded}
             </span>
             <span style={{
               display: 'inline-flex',
@@ -84,7 +161,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
               borderRadius: '6px',
               fontFamily: 'var(--font-mono)'
             }}>
-              <Minus size={11} /> {patch.linesRemoved}
+              <Minus size={11} /> {activeLinesRemoved}
             </span>
           </div>
         </div>
@@ -92,13 +169,13 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{
             fontSize: '11px',
-            color: patch.syntaxValid ? '#34d399' : '#f43f5e',
-            background: patch.syntaxValid ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+            color: activeSyntaxValid ? '#34d399' : '#f43f5e',
+            background: activeSyntaxValid ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
             padding: '3px 9px',
             borderRadius: '9999px',
-            border: `1px solid ${patch.syntaxValid ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`
+            border: `1px solid ${activeSyntaxValid ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`
           }}>
-            {patch.syntaxValid ? 'AST Syntax Valid' : 'Syntax Error'}
+            {activeSyntaxValid ? 'AST Syntax Valid' : 'Syntax Error'}
           </span>
 
           <button
@@ -144,7 +221,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
         overflowX: 'auto',
         maxHeight: '440px'
       }}>
-        {(!patch.unifiedDiff || patch.unifiedDiff === '(No changes detected)' || (patch.linesAdded === 0 && patch.linesRemoved === 0)) ? (
+        {(!activeUnifiedDiff || activeUnifiedDiff === '(No changes detected)' || (activeLinesAdded === 0 && activeLinesRemoved === 0)) ? (
           <div style={{
             padding: '24px 20px',
             textAlign: 'center',
@@ -155,7 +232,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ patch }) => {
               No Changes Detected (+0 / -0)
             </div>
             <div style={{ fontSize: '12px', color: '#71717a' }}>
-              The target file <code>{patch.targetFile}</code> already contains the proposed fix or matches the requested implementation state.
+              The target file <code>{activeTargetFile}</code> already contains the proposed fix or matches the requested implementation state.
             </div>
           </div>
         ) : (
